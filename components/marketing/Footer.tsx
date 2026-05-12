@@ -2,64 +2,43 @@ import Link from "next/link";
 
 export function Footer() {
   return (
-    <footer className="border-t border-chalk bg-eggshell">
-      <div className="mx-auto grid max-w-6xl gap-8 px-6 py-12 md:grid-cols-4">
-        <div className="md:col-span-2">
-          <div className="font-display text-[18px] tracking-tight">patiyolu</div>
-          <p className="mt-3 max-w-sm text-[13px] leading-6 text-gravel">
-            Türkiye'de evcil hayvan taşımacılığını şeffaf, sözleşmeli ve puanlı
-            bir sicille güvene kavuşturuyoruz.
-          </p>
+    <footer className="bg-eggshell">
+      <div className="mx-auto max-w-5xl px-6 py-12">
+        <div className="flex flex-col items-center gap-6 text-center md:flex-row md:items-start md:justify-between md:text-left">
+          <div>
+            <div className="font-display text-[20px] tracking-tight">
+              <span aria-hidden>🐾</span> patiyolu
+            </div>
+            <p className="mt-2 max-w-xs text-[12px] leading-5 text-gravel">
+              Türkiye'de evcil hayvan taşımacılığını şeffaf ve güvene
+              kavuşturuyoruz.
+            </p>
+          </div>
+
+          <nav
+            className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[13px]"
+            aria-label="Footer"
+          >
+            <Link href="/nasil-calisir" className="text-obsidian hover:text-gravel">
+              Nasıl çalışır
+            </Link>
+            <Link href="/tasiyici-ol" className="text-obsidian hover:text-gravel">
+              Taşıyıcı ol
+            </Link>
+            <Link href="/sozlesme-ornegi" className="text-obsidian hover:text-gravel">
+              Sözleşme
+            </Link>
+            <Link href="#" className="text-obsidian hover:text-gravel">
+              İletişim
+            </Link>
+          </nav>
         </div>
-        <FooterCol
-          title="Ürün"
-          items={[
-            { label: "Nasıl çalışır", href: "/nasil-calisir" },
-            { label: "Taşıyıcı ol", href: "/tasiyici-ol" },
-            { label: "Sözleşme", href: "/sozlesme-ornegi" },
-          ]}
-        />
-        <FooterCol
-          title="Şirket"
-          items={[
-            { label: "Hakkımızda", href: "#" },
-            { label: "İletişim", href: "#" },
-            { label: "KVKK", href: "#" },
-          ]}
-        />
-      </div>
-      <div className="border-t border-chalk">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5 font-mono text-[10px] text-gravel">
-          <span>© {new Date().getFullYear()} patiyolu</span>
-          <span>tüm hakları saklıdır</span>
+
+        <div className="mt-8 flex flex-col items-center gap-1 border-t border-chalk pt-5 font-mono text-[10px] uppercase tracking-[0.15em] text-gravel md:flex-row md:justify-between">
+          <span>© {new Date().getFullYear()} patiyolu · tüm hakları saklıdır</span>
+          <span>İstanbul, Türkiye 🇹🇷</span>
         </div>
       </div>
     </footer>
-  );
-}
-
-function FooterCol({
-  title,
-  items,
-}: {
-  title: string;
-  items: { label: string; href: string }[];
-}) {
-  return (
-    <div>
-      <div className="font-mono text-[10px] text-gravel">{title}</div>
-      <ul className="mt-3 space-y-2">
-        {items.map((it) => (
-          <li key={it.label}>
-            <Link
-              href={it.href}
-              className="text-[13px] text-obsidian transition hover:text-gravel"
-            >
-              {it.label}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
   );
 }
