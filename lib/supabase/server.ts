@@ -1,14 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import type { Database } from "./types";
 
 /**
- * Server-side Supabase client. Server component'ler ve route handler'lardan kullanılır.
- * Next.js 15+ `cookies()` async; bu yüzden helper da async.
+ * Server-side Supabase client. Server component / route handler / server action'lardan kullanılır.
  */
 export async function createClient() {
   const cookieStore = await cookies();
 
-  return createServerClient(
+  return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -22,9 +22,29 @@ export async function createClient() {
               cookieStore.set(name, value, options);
             });
           } catch {
-            // Server component'tan çağrılırsa cookie yazılamaz — sessizce geç.
-            // Middleware oturum yenilemeyi üstlenecek.
+            // Server component'tan çağrılırsa cookie yazılamaz — proxy halleder.
           }
+        },
+      },
+    },
+  );
+}
+
+/**
+ * Service role client — yalnız server-side, RLS bypass. Admin işlemleri için.
+ * ASLA bunu client'a, log'a veya çerez içine sızdırma.
+ */
+export function createServiceRoleClient() {
+  return createServerClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return [];
+        },
+        setAll() {
+          // service role çerezsiz
         },
       },
     },
