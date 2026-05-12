@@ -6,6 +6,14 @@ export type AppRole = "customer" | "transporter" | "sitter" | "vet";
 export type Species = "dog" | "cat" | "bird" | "rabbit" | "other";
 export type VehicleType = "car" | "van" | "truck";
 export type KycStatus = "pending" | "approved" | "rejected";
+export type Urgency = "standard" | "express" | "sameday";
+export type ListingStatus =
+  | "draft"
+  | "published"
+  | "closed"
+  | "expired"
+  | "cancelled";
+export type BidStatus = "pending" | "accepted" | "rejected" | "withdrawn";
 
 export type Json =
   | string
@@ -172,6 +180,82 @@ export type Database = {
         };
         Relationships: [];
       };
+      listings: {
+        Row: {
+          id: string;
+          customer_id: string;
+          pet_id: string | null;
+          pickup_address: string;
+          pickup_lat: number;
+          pickup_lng: number;
+          pickup_city: string | null;
+          dropoff_address: string;
+          dropoff_lat: number;
+          dropoff_lng: number;
+          dropoff_city: string | null;
+          distance_km: number;
+          urgency: Urgency;
+          est_price_min: number;
+          est_price_max: number;
+          scheduled_at: string | null;
+          notes: string | null;
+          status: ListingStatus;
+          listing_fee_paid_at: string | null;
+          listing_fee_amount: number | null;
+          iyzico_listing_ref: string | null;
+          published_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          customer_id: string;
+          pet_id?: string | null;
+          pickup_address: string;
+          pickup_lat: number;
+          pickup_lng: number;
+          pickup_city?: string | null;
+          dropoff_address: string;
+          dropoff_lat: number;
+          dropoff_lng: number;
+          dropoff_city?: string | null;
+          distance_km: number;
+          urgency?: Urgency;
+          est_price_min: number;
+          est_price_max: number;
+          scheduled_at?: string | null;
+          notes?: string | null;
+          status?: ListingStatus;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["listings"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      bids: {
+        Row: {
+          id: string;
+          listing_id: string;
+          transporter_id: string;
+          price: number;
+          eta_hours: number | null;
+          message: string | null;
+          status: BidStatus;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          listing_id: string;
+          transporter_id: string;
+          price: number;
+          eta_hours?: number | null;
+          message?: string | null;
+          status?: BidStatus;
+        };
+        Update: Partial<Database["public"]["Tables"]["bids"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: {
       public_profiles: {
@@ -195,3 +279,5 @@ export type UserRole = Database["public"]["Tables"]["user_roles"]["Row"];
 export type TransporterProfile =
   Database["public"]["Tables"]["transporter_profiles"]["Row"];
 export type Pet = Database["public"]["Tables"]["pets"]["Row"];
+export type Listing = Database["public"]["Tables"]["listings"]["Row"];
+export type Bid = Database["public"]["Tables"]["bids"]["Row"];
