@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Patiyolu — Pet Nakliyat
 
-## Getting Started
+Tüylü dostlar için güvenli, sözleşmeli, puanlı bir nakliyat pazaryeri. Müşteri,
+taşıyıcı ve (Faz 2) bakıcı + veteriner panellerini tek hesap altında birleştirir.
 
-First, run the development server:
+> **Faz 1 scope:** Nakliyat çekirdek akışı (ilan → teklif → kabul → sözleşme →
+> tamamlama → değerlendirme → ödeme). Bakıcı booking + veteriner dizini Faz 2.
+
+## Stack
+
+- **Next.js 16** (App Router, Turbopack) + **React 19** + **TypeScript**
+- **Tailwind CSS v4** + **shadcn/ui** (base-nova preset, Base UI primitives)
+- **Framer Motion** + **lottie-react** — page transitions, micro-interactions, tatlı patik loader
+- **Supabase** (Auth + Postgres + Storage + Realtime + RLS)
+- **Mapbox GL JS** + Directions API — km bazlı fiyat
+- **Iyzico** — ödeme (TR, taksit, 3D Secure)
+- **react-hook-form** + **zod** — form + validasyon
+- **TanStack Query** — server state
+- **next-intl** — i18n (TR default)
+
+Tam plan: `../PLAN.md` (proje kökünde de masaüstü kopyası).
+
+## Hızlı başlangıç
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
+cp .env.example .env.local   # değerleri doldur (Supabase, Mapbox, Iyzico)
+pnpm dev                     # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Supabase ve diğer servis anahtarları olmadan da landing sayfası açılır
+(proxy.ts oturum güncellemeyi sessizce atlar).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Komutlar
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Komut | Açıklama |
+|---|---|
+| `pnpm dev` | Dev sunucu (Turbopack) |
+| `pnpm build` | Production build |
+| `pnpm start` | Build'i çalıştır |
+| `pnpm lint` | ESLint |
+| `pnpm exec tsc --noEmit` | Tip kontrolü |
 
-## Learn More
+## Klasör yapısı
 
-To learn more about Next.js, take a look at the following resources:
+```
+app/                  # App Router sayfaları + globals.css
+components/           # ui (shadcn), marketing, motion, layout, ...
+lib/                  # supabase, mapbox, iyzico, pricing, utils
+hooks/                # useReducedMotion, ...
+public/lottie/        # Animasyon JSON'ları
+supabase/migrations/  # SQL göçleri
+docs/                 # DESIGN.md, sözleşmeler
+proxy.ts              # Next.js 16 proxy (eski middleware)
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Design system
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Bkz. `docs/DESIGN.md`. Özet:
 
-## Deploy on Vercel
+- **Yüzey:** eggshell `#fdfcfc`, powder `#f5f3f1`, chalk `#e5e5e5`
+- **Yazı:** obsidian `#111111`, gravel `#777169`
+- **Fonksiyonel:** signal `#0447ff`, danger `#c93f3f`
+- **Pet aksesuar:** paw `#f4a261`, clover `#6aa971`, blush `#f7c5c0`
+- **Font:** Fraunces 300 (display), Inter 400/500 (body), Geist Mono (badge)
+- **CTA:** siyah pill (`rounded-full`, `bg-primary`, `text-primary-foreground`)
+- **Gölge yok**, sadece hairline `1px var(--color-chalk)` border
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Geliştirme prensipleri
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **RLS her zaman açık.** Supabase'de service_role asla client'a sızmaz.
+- **Iyzico webhook'larında HMAC doğrula.**
+- **`asChild` yok** — Base UI button `render` prop'u kullanır.
+- **Mutation server action.** Form submit'lerde client → server action akışı.
+- **Reduced motion respect.** Tüm animasyonlar `prefers-reduced-motion` ile bypass.
+- Sözleşme imzalamadan, KYC onaylanmadan taşıyıcı teklif veremez.

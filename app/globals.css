@@ -1,26 +1,245 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@custom-variant dark (&:is(.dark *));
+
+/* =========================================================
+   Patiyolu — Design Tokens
+   Temel: ElevenLabs (eggshell + obsidian + chalk + signal blue)
+   Pet aksesuar: paw (amber), clover (green), blush (rose)
+   ========================================================= */
+
+@theme {
+  /* ---------- Yüzeyler ---------- */
+  --color-eggshell: #fdfcfc;
+  --color-powder:   #f5f3f1;
+  --color-chalk:    #e5e5e5;
+
+  /* ---------- Yazı renkleri ---------- */
+  --color-obsidian: #111111;
+  --color-cinder:   #575734;
+  --color-gravel:   #777169;
+  --color-slate:    #a59f97;
+  --color-fog:      #b1b0b0;
+
+  /* ---------- Fonksiyonel ---------- */
+  --color-signal:   #0447ff;
+  --color-danger:   #c93f3f;
+  --color-success:  #2f8a4e;
+
+  /* ---------- Pet aksesuar ---------- */
+  --color-paw:      #f4a261;
+  --color-clover:   #6aa971;
+  --color-blush:    #f7c5c0;
+  --color-ember:    #ff4704;
+
+  /* ---------- Hareket ---------- */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 160ms;
+  --duration-normal: 280ms;
+  --duration-slow: 480ms;
 }
 
+/* =========================================================
+   shadcn semantik değişkenleri Patiyolu token'larına bağlı
+   ========================================================= */
+:root {
+  color-scheme: light only;
+
+  /* Surfaces */
+  --background: #fdfcfc;       /* eggshell */
+  --foreground: #111111;       /* obsidian */
+  --card: #ffffff;
+  --card-foreground: #111111;
+  --popover: #ffffff;
+  --popover-foreground: #111111;
+
+  /* Action */
+  --primary: #111111;          /* obsidian — primary CTA */
+  --primary-foreground: #fdfcfc;
+  --secondary: #f5f3f1;        /* powder */
+  --secondary-foreground: #111111;
+  --muted: #f5f3f1;
+  --muted-foreground: #777169; /* gravel */
+  --accent: #f5f3f1;
+  --accent-foreground: #111111;
+  --destructive: #c93f3f;
+
+  /* Lines + focus */
+  --border: #e5e5e5;           /* chalk */
+  --input: #e5e5e5;
+  --ring: #0447ff;             /* signal */
+
+  /* Chart palette — pet aksesuar */
+  --chart-1: #f4a261;          /* paw amber */
+  --chart-2: #6aa971;          /* clover */
+  --chart-3: #f7c5c0;          /* blush */
+  --chart-4: #0447ff;          /* signal */
+  --chart-5: #777169;          /* gravel */
+
+  /* Radius — 12px input, 16px card, 9999px pill */
+  --radius: 0.75rem;           /* 12px = input + button base */
+
+  /* Sidebar (panel sayfaları için) */
+  --sidebar: #fdfcfc;
+  --sidebar-foreground: #111111;
+  --sidebar-primary: #111111;
+  --sidebar-primary-foreground: #fdfcfc;
+  --sidebar-accent: #f5f3f1;
+  --sidebar-accent-foreground: #111111;
+  --sidebar-border: #e5e5e5;
+  --sidebar-ring: #0447ff;
+}
+
+/* Dark mode (Faz 3'te aktive olur — şimdilik kapalı, ama yapıyı bırakıyoruz) */
+.dark {
+  --background: #111111;
+  --foreground: #fdfcfc;
+  --card: #1a1a1a;
+  --card-foreground: #fdfcfc;
+  --popover: #1a1a1a;
+  --popover-foreground: #fdfcfc;
+  --primary: #fdfcfc;
+  --primary-foreground: #111111;
+  --secondary: #2a2a2a;
+  --secondary-foreground: #fdfcfc;
+  --muted: #2a2a2a;
+  --muted-foreground: #a59f97;
+  --accent: #2a2a2a;
+  --accent-foreground: #fdfcfc;
+  --destructive: #c93f3f;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: #0447ff;
+}
+
+/* =========================================================
+   @theme inline — Tailwind utility üretimi için
+   ========================================================= */
 @theme inline {
+  --font-heading: var(--font-fraunces);
+  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-geist-mono);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-sm: calc(var(--radius) * 0.5);     /* 6px */
+  --radius-md: calc(var(--radius) * 0.75);    /* 9px */
+  --radius-lg: var(--radius);                  /* 12px */
+  --radius-xl: calc(var(--radius) * 1.33);     /* 16px = card */
+  --radius-2xl: calc(var(--radius) * 2);       /* 24px */
+  --radius-3xl: calc(var(--radius) * 2.5);     /* 30px */
+  --radius-pill: 9999px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* =========================================================
+   Base
+   ========================================================= */
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/40;
+  }
+  html {
+    @apply font-sans;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-size: 16px;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Display family yardımcı sınıflar */
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 300;
+  letter-spacing: -0.025em;
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Seçim */
+::selection {
+  background: var(--color-obsidian);
+  color: var(--color-eggshell);
+}
+
+/* Focus halkası — signal blue */
+:focus-visible {
+  outline: 2px solid var(--color-signal);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Scrollbar — minimal */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-eggshell);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-chalk);
+  border-radius: 9999px;
+  border: 2px solid var(--color-eggshell);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-fog);
 }
