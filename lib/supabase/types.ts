@@ -226,10 +226,33 @@ export type Database = {
           scheduled_at?: string | null;
           notes?: string | null;
           status?: ListingStatus;
+          published_at?: string | null;
+          listing_fee_paid_at?: string | null;
+          listing_fee_amount?: number | null;
+          iyzico_listing_ref?: string | null;
         };
-        Update: Partial<
-          Database["public"]["Tables"]["listings"]["Insert"]
-        >;
+        Update: {
+          pet_id?: string | null;
+          pickup_address?: string;
+          pickup_lat?: number;
+          pickup_lng?: number;
+          pickup_city?: string | null;
+          dropoff_address?: string;
+          dropoff_lat?: number;
+          dropoff_lng?: number;
+          dropoff_city?: string | null;
+          distance_km?: number;
+          urgency?: Urgency;
+          est_price_min?: number;
+          est_price_max?: number;
+          scheduled_at?: string | null;
+          notes?: string | null;
+          status?: ListingStatus;
+          published_at?: string | null;
+          listing_fee_paid_at?: string | null;
+          listing_fee_amount?: number | null;
+          iyzico_listing_ref?: string | null;
+        };
         Relationships: [];
       };
       bids: {
