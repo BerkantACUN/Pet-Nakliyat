@@ -14,6 +14,13 @@ export type ListingStatus =
   | "expired"
   | "cancelled";
 export type BidStatus = "pending" | "accepted" | "rejected" | "withdrawn";
+export type ContractAudience = "transporter" | "customer";
+export type KycDocType =
+  | "id_front"
+  | "id_back"
+  | "plate_photo"
+  | "vehicle_registration";
+export type KycDocStatus = "pending" | "approved" | "rejected";
 
 export type Json =
   | string
@@ -100,6 +107,7 @@ export type Database = {
           min_charge: number;
           kyc_status: KycStatus;
           contract_signature_id: string | null;
+          contract_signed_at: string | null;
           rating_avg: number;
           rating_count: number;
           completed_count: number;
@@ -119,6 +127,7 @@ export type Database = {
           min_charge?: number;
           kyc_status?: KycStatus;
           contract_signature_id?: string | null;
+          contract_signed_at?: string | null;
           rating_avg?: number;
           rating_count?: number;
           completed_count?: number;
@@ -136,6 +145,7 @@ export type Database = {
           min_charge?: number;
           kyc_status?: KycStatus;
           contract_signature_id?: string | null;
+          contract_signed_at?: string | null;
           rating_avg?: number;
           rating_count?: number;
           completed_count?: number;
@@ -279,6 +289,92 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["bids"]["Insert"]>;
         Relationships: [];
       };
+      contract_templates: {
+        Row: {
+          id: string;
+          version: string;
+          audience: ContractAudience;
+          title: string;
+          content_md: string;
+          word_count: number;
+          effective_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          version: string;
+          audience: ContractAudience;
+          title: string;
+          content_md: string;
+          word_count?: number;
+          effective_at?: string;
+        };
+        Update: {
+          version?: string;
+          audience?: ContractAudience;
+          title?: string;
+          content_md?: string;
+          word_count?: number;
+          effective_at?: string;
+        };
+        Relationships: [];
+      };
+      contract_signatures: {
+        Row: {
+          id: string;
+          user_id: string;
+          template_id: string;
+          signed_full_name: string;
+          signed_ip: string | null;
+          signed_user_agent: string | null;
+          signature_hash: string;
+          signed_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          template_id: string;
+          signed_full_name: string;
+          signed_ip?: string | null;
+          signed_user_agent?: string | null;
+          signature_hash: string;
+          signed_at?: string;
+        };
+        Update: never;
+        Relationships: [];
+      };
+      kyc_documents: {
+        Row: {
+          id: string;
+          user_id: string;
+          doc_type: KycDocType;
+          storage_path: string;
+          status: KycDocStatus;
+          reviewer_note: string | null;
+          reviewed_by: string | null;
+          reviewed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          doc_type: KycDocType;
+          storage_path: string;
+          status?: KycDocStatus;
+          reviewer_note?: string | null;
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+        };
+        Update: {
+          storage_path?: string;
+          status?: KycDocStatus;
+          reviewer_note?: string | null;
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       public_profiles: {
@@ -304,3 +400,8 @@ export type TransporterProfile =
 export type Pet = Database["public"]["Tables"]["pets"]["Row"];
 export type Listing = Database["public"]["Tables"]["listings"]["Row"];
 export type Bid = Database["public"]["Tables"]["bids"]["Row"];
+export type ContractTemplate =
+  Database["public"]["Tables"]["contract_templates"]["Row"];
+export type ContractSignature =
+  Database["public"]["Tables"]["contract_signatures"]["Row"];
+export type KycDocument = Database["public"]["Tables"]["kyc_documents"]["Row"];

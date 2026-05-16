@@ -44,7 +44,7 @@ export async function createBidAction(
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "Oturum yok" };
 
-  // Taşıyıcı profili + KYC + sözleşme kontrolü
+  // Taşıyıcı profili + sözleşme + KYC kontrolü
   const { data: tp } = await supabase
     .from("transporter_profiles")
     .select("user_id, kyc_status, contract_signature_id")
@@ -57,9 +57,23 @@ export async function createBidAction(
       error: "Önce taşıyıcı profilini oluşturmalısın",
     };
   }
-  // Faz 1: KYC manuel review + sözleşme imzası şart (Sprint 5'te aktive)
-  // Şu an dev modu: kyc_status='pending' iken de teklif atmasına izin ver
-  // (gerçek launch'ta bu satırı sıkılaştırırız)
+  if (!tp.contract_signature_id) {
+    return {
+      ok: false,
+      error: "Teklif vermek için önce taşıyıcı sözleşmesini imzala",
+    };
+  }
+  // Dev modu: KYC pending iken de teklife izin veriyoruz.
+  // Production: aşağıdaki kontrolü aç —
+  // if (tp.kyc_status !== "approved") {
+  //   return { ok: false, error: "KYC onayın bekliyor; onaylandıktan sonra teklif verebilirsin" };
+  // }
+  if (tp.kyc_status === "rejected") {
+    return {
+      ok: false,
+      error: "KYC reddedildi. Belgelerini güncelleyip tekrar başvur.",
+    };
+  }
 
   const { error } = await supabase.from("bids").insert({
     listing_id: parsed.data.listingId,

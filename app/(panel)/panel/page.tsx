@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ArrowRight, Plus } from "lucide-react";
+import { ArrowRight, FileText, Plus, ShieldCheck } from "lucide-react";
 import { requireOnboardedUser } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/marketing/Chip";
 
@@ -8,6 +9,19 @@ export const metadata = { title: "Panel · Patiyolu" };
 
 export default async function PanelHomePage() {
   const user = await requireOnboardedUser();
+  const supabase = await createClient();
+
+  let transporterStep: "contract" | "kyc" | "ready" | null = null;
+  if (user.roles.includes("transporter")) {
+    const { data: tp } = await supabase
+      .from("transporter_profiles")
+      .select("contract_signature_id, kyc_status")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (!tp?.contract_signature_id) transporterStep = "contract";
+    else if (tp.kyc_status !== "approved") transporterStep = "kyc";
+    else transporterStep = "ready";
+  }
 
   return (
     <div className="space-y-6">
@@ -22,6 +36,71 @@ export default async function PanelHomePage() {
           Pati yolculuğun nereden başlasın?
         </p>
       </header>
+
+      {transporterStep && transporterStep !== "ready" ? (
+        <section
+          className="rounded-3xl border p-5"
+          style={{
+            borderColor: "var(--color-chalk)",
+            background:
+              transporterStep === "contract"
+                ? "color-mix(in oklch, var(--color-paw) 12%, white)"
+                : "color-mix(in oklch, var(--color-signal) 8%, white)",
+          }}
+        >
+          <div className="flex items-start gap-3">
+            <div
+              className="grid size-10 shrink-0 place-items-center rounded-2xl"
+              style={{
+                background:
+                  transporterStep === "contract"
+                    ? "color-mix(in oklch, var(--color-paw) 25%, white)"
+                    : "color-mix(in oklch, var(--color-signal) 20%, white)",
+              }}
+            >
+              {transporterStep === "contract" ? (
+                <FileText className="size-5" />
+              ) : (
+                <ShieldCheck className="size-5" />
+              )}
+            </div>
+            <div className="flex-1">
+              <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-gravel">
+                Taşıyıcı kurulumu — {transporterStep === "contract" ? "1/2" : "2/2"}
+              </p>
+              <h2 className="mt-0.5 font-display text-[20px] leading-tight">
+                {transporterStep === "contract"
+                  ? "Sözleşmeni imzala 📜"
+                  : "Kimlik & araç doğrulaması"}
+              </h2>
+              <p className="mt-1 text-[13px] text-gravel">
+                {transporterStep === "contract"
+                  ? "Teklif verebilmen için taşıyıcı sözleşmesini elektronik olarak imzalaman gerekiyor."
+                  : "Belgelerini yükle, inceleme ekibimiz 1-3 iş günü içinde dönsün."}
+              </p>
+              <Button
+                variant="pill"
+                size="sm"
+                className="mt-3"
+                render={
+                  <Link
+                    href={
+                      transporterStep === "contract"
+                        ? "/sozlesme"
+                        : "/tasiyici/kyc"
+                    }
+                  />
+                }
+              >
+                {transporterStep === "contract"
+                  ? "Sözleşmeye git"
+                  : "Belgeleri yükle"}
+                <ArrowRight className="size-3.5" />
+              </Button>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <section className="grid gap-3">
         <ActionCard
