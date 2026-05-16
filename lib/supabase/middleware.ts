@@ -11,9 +11,15 @@ const PROTECTED_PREFIXES = [
   "/ayarlar",
   "/sozlesme",
   "/onboarding",
+  "/admin",
 ] as const;
 
 const AUTH_PAGES = ["/giris", "/kayit", "/sifre-sifirla"] as const;
+
+function matchesPrefix(pathname: string, prefix: string): boolean {
+  // Segment sınırında eşleş: "/tasiyici" → /tasiyici, /tasiyici/x ama /tasiyici-ol değil
+  return pathname === prefix || pathname.startsWith(`${prefix}/`);
+}
 
 /**
  * Her istekte oturum çerezini yeniler ve korunan rotaları gate'ler.
@@ -48,8 +54,8 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
-  const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
-  const isAuthPage = AUTH_PAGES.some((p) => pathname.startsWith(p));
+  const isProtected = PROTECTED_PREFIXES.some((p) => matchesPrefix(pathname, p));
+  const isAuthPage = AUTH_PAGES.some((p) => matchesPrefix(pathname, p));
 
   // Korunan rotada oturum yoksa → /giris
   if (isProtected && !user) {

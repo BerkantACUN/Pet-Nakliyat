@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { ChevronDown, LogOut, UserCircle2, Plus } from "lucide-react";
+import { ChevronDown, LogOut, UserCircle2, Plus, Settings } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -89,11 +89,19 @@ export function Topbar({ name, email, avatarUrl, roles, activeRole }: TopbarProp
                 <UserCircle2 className="mr-2 size-4" /> Profilim
               </DropdownMenuItem>
               <DropdownMenuItem
-                render={<Link href="/tasiyici-ol" />}
+                render={<Link href="/ayarlar" />}
                 className="cursor-pointer rounded-xl px-3 py-2 text-[13px]"
               >
-                <Plus className="mr-2 size-4" /> Taşıyıcı rolü ekle
+                <Settings className="mr-2 size-4" /> Ayarlar
               </DropdownMenuItem>
+              {!roles.includes("transporter") ? (
+                <DropdownMenuItem
+                  render={<Link href="/profil" />}
+                  className="cursor-pointer rounded-xl px-3 py-2 text-[13px]"
+                >
+                  <Plus className="mr-2 size-4" /> Taşıyıcı rolü ekle
+                </DropdownMenuItem>
+              ) : null}
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onSelect={(e) => {
