@@ -12,9 +12,12 @@ Project ref: `nofvyzegeyafbuurqsre`
 **Yöntem A — Dashboard SQL Editor (en hızlı):**
 
 1. https://supabase.com/dashboard/project/nofvyzegeyafbuurqsre/sql/new
-2. `supabase/migrations/0001_profiles_roles_pets.sql` içeriğini yapıştır → Run
-3. `supabase/migrations/0002_rls_policies_s1.sql` içeriğini yapıştır → Run
-4. Sonraki sprint'lerin migration'ları geldikçe sırayla aynı şekilde çalıştır
+2. `supabase/migrations/0001_profiles_roles_pets.sql` → Run
+3. `supabase/migrations/0002_rls_policies_s1.sql` → Run
+4. `supabase/migrations/0003_listings_bids.sql` → Run
+5. `supabase/migrations/0004_contracts_kyc.sql` → Run
+6. `supabase/migrations/0005_seed_contract_v1.sql` → Run (uzun, ~25KB)
+7. Sonraki sprint'lerde yeni migration dosyalarını sırayla aynı şekilde çalıştır
 
 **Yöntem B — Supabase CLI:**
 
@@ -87,12 +90,21 @@ Tüm public tablolar `rowsecurity = true` olmalı.
 4. /panel'de "Merhaba, {ad}" karşılaması görünür
 5. Avatar dropdown → Çıkış yap → /'ya geri döner
 
-## 5. Sıradaki sprint'ler için
+## 5. KYC Storage (Sprint 5)
 
-- **S2 — Pet + Listing form:** `supabase/migrations/0003_listings_bids.sql` yazılınca aynı yöntemle apply
+0004 migration `kyc` adında **private** bir bucket oluşturur ve RLS policies'i ekler. Dashboard'da kontrol:
+
+- https://supabase.com/dashboard/project/nofvyzegeyafbuurqsre/storage/buckets
+- `kyc` bucket görünmeli, **Public access = OFF**
+- Storage → Policies → bucket = kyc → 4 policy (read/insert/update/delete) sadece kendi `auth.uid()` klasörü için
+
+Path düzeni: `kyc/{user_id}/{doc_type}-{timestamp}.{ext}`
+
+## 6. Sıradaki sprint'ler için
+
 - **S3 — Iyzico:** ayrı doc, ödeme API anahtarları
-- **S5 — KYC + Storage:** Storage bucket oluştur (`kyc-documents`, private)
-- **S6 — Realtime:** chat için tablo realtime'a açılır
+- **S6 — Realtime:** chat için `messages` ve `conversations` tabloları realtime'a açılır
+- **S7 — Admin:** KYC inceleme paneli için admin rolü RPC'leri
 
 ## Sorun giderme
 
