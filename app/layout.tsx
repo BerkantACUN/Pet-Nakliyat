@@ -25,10 +25,30 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Patiyolu — Evcil Dostlar için Güvenli Nakliyat",
+  title: {
+    default: "Patiyolu — Evcil Dostlar için Güvenli Nakliyat",
+    template: "%s · Patiyolu",
+  },
   description:
     "Şehir içi ve şehirler arası evcil hayvan taşımacılığı. Şeffaf km bazlı fiyat, imzalı sözleşmeli taşıyıcılar, puanlı sicil.",
-  metadataBase: new URL("https://patiyolu.app"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://patiyolu.app",
+  ),
+  openGraph: {
+    title: "Patiyolu — Evcil Dostlar için Güvenli Nakliyat",
+    description:
+      "Şeffaf fiyat, imzalı sözleşmeli taşıyıcılar, puanlı sicil. Türkiye'nin pet nakliyat platformu.",
+    locale: "tr_TR",
+    type: "website",
+    siteName: "Patiyolu",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Patiyolu",
+    description: "Evcil dostlar için güvenli nakliyat.",
+  },
+  alternates: { canonical: "/" },
+  icons: { icon: "/favicon.ico" },
 };
 
 export default function RootLayout({
