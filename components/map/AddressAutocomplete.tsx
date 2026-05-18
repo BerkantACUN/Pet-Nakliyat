@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MapPin, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { searchAddress, type GeoSuggestion } from "@/lib/mapbox/geocoding";
+import { searchTrPlaces } from "@/lib/geo/tr-places";
 import { useDebounce } from "@/hooks/useDebounce";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +25,8 @@ interface AddressAutocompleteProps {
   error?: string;
 }
 
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+
 export function AddressAutocomplete({
   id,
   label,
@@ -33,43 +36,53 @@ export function AddressAutocomplete({
   error,
 }: AddressAutocompleteProps) {
   const [query, setQuery] = useState(value?.address ?? "");
-  const [suggestions, setSuggestions] = useState<GeoSuggestion[]>([]);
+  const [remoteSuggestions, setRemoteSuggestions] = useState<GeoSuggestion[]>(
+    [],
+  );
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [remoteFailed, setRemoteFailed] = useState(false);
 
   const debounced = useDebounce(query, 280);
   const ignoreNextFetchRef = useRef(false);
 
+  const useFallback = !MAPBOX_TOKEN || remoteFailed;
+
+  // Yerel TR şehir/ilçe arama (anlık, Mapbox key olmasa da çalışır)
+  const localSuggestions = useMemo(() => {
+    if (!useFallback) return [];
+    if (!query || query.trim().length < 2) return [];
+    return searchTrPlaces(query.trim(), 8);
+  }, [query, useFallback]);
+
   useEffect(() => {
+    if (useFallback) {
+      setRemoteSuggestions([]);
+      setLoading(false);
+      return;
+    }
     if (ignoreNextFetchRef.current) {
       ignoreNextFetchRef.current = false;
       return;
     }
     if (!debounced || debounced.length < 3) {
-      setSuggestions([]);
-      setFetchError(null);
+      setRemoteSuggestions([]);
       return;
     }
     let aborted = false;
     const ctrl = new AbortController();
     setLoading(true);
-    setFetchError(null);
     searchAddress(debounced, { signal: ctrl.signal, limit: 5 })
       .then((res) => {
         if (!aborted) {
-          setSuggestions(res);
+          setRemoteSuggestions(res);
           setOpen(true);
         }
       })
-      .catch((err: unknown) => {
-        if (aborted) return;
-        const msg = err instanceof Error ? err.message : "Adres aranamadı";
-        setFetchError(
-          msg.includes("token")
-            ? "Mapbox anahtarı eksik. Yöneticine bildir."
-            : msg,
-        );
+      .catch(() => {
+        if (!aborted) {
+          setRemoteFailed(true);
+        }
       })
       .finally(() => {
         if (!aborted) setLoading(false);
@@ -78,12 +91,12 @@ export function AddressAutocomplete({
       aborted = true;
       ctrl.abort();
     };
-  }, [debounced]);
+  }, [debounced, useFallback]);
 
-  function pick(s: GeoSuggestion) {
+  function pickRemote(s: GeoSuggestion) {
     ignoreNextFetchRef.current = true;
     setQuery(s.place_name);
-    setSuggestions([]);
+    setRemoteSuggestions([]);
     setOpen(false);
     onChange({
       address: s.place_name,
@@ -93,11 +106,26 @@ export function AddressAutocomplete({
     });
   }
 
+  function pickLocal(p: ReturnType<typeof searchTrPlaces>[number]) {
+    setQuery(p.name);
+    setOpen(false);
+    onChange({
+      address: p.name,
+      lat: p.lat,
+      lng: p.lng,
+      city: p.city,
+    });
+  }
+
   function clear() {
     setQuery("");
-    setSuggestions([]);
+    setRemoteSuggestions([]);
     onChange(null);
   }
+
+  const showList =
+    open &&
+    (useFallback ? localSuggestions.length > 0 : remoteSuggestions.length > 0);
 
   return (
     <div className="relative space-y-1.5">
@@ -110,15 +138,25 @@ export function AddressAutocomplete({
           id={id}
           value={query}
           autoComplete="off"
-          placeholder={placeholder ?? "Adres veya semt ara…"}
+          placeholder={
+            placeholder ?? (useFallback ? "İl veya ilçe yaz…" : "Adres ara…")
+          }
           aria-invalid={!!error}
           aria-expanded={open}
           aria-autocomplete="list"
           className="pl-9 pr-9"
-          onFocus={() => suggestions.length && setOpen(true)}
+          onFocus={() => {
+            if (
+              (useFallback && localSuggestions.length > 0) ||
+              (!useFallback && remoteSuggestions.length > 0)
+            ) {
+              setOpen(true);
+            }
+          }}
           onBlur={() => setTimeout(() => setOpen(false), 180)}
           onChange={(e) => {
             setQuery(e.target.value);
+            setOpen(true);
             if (value) onChange(null);
           }}
         />
@@ -136,34 +174,55 @@ export function AddressAutocomplete({
         ) : null}
       </div>
 
-      {open && suggestions.length > 0 ? (
+      {showList ? (
         <ul
           role="listbox"
           className="absolute z-20 mt-1 w-full overflow-hidden rounded-2xl border border-chalk bg-white shadow-[0_12px_40px_-12px_rgba(17,17,17,0.18)]"
         >
-          {suggestions.map((s) => (
-            <li
-              key={s.id}
-              role="option"
-              aria-selected={false}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                pick(s);
-              }}
-              className={cn(
-                "flex cursor-pointer items-start gap-2 px-3 py-2 text-[13px] hover:bg-powder",
-              )}
-            >
-              <MapPin className="mt-0.5 size-4 shrink-0 text-gravel" />
-              <span className="line-clamp-2">{s.place_name}</span>
-            </li>
-          ))}
+          {useFallback
+            ? localSuggestions.map((p) => (
+                <li
+                  key={p.id}
+                  role="option"
+                  aria-selected={false}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    pickLocal(p);
+                  }}
+                  className={cn(
+                    "flex cursor-pointer items-start gap-2 px-3 py-2 text-[13px] hover:bg-powder",
+                  )}
+                >
+                  <MapPin className="mt-0.5 size-4 shrink-0 text-gravel" />
+                  <span className="line-clamp-2">{p.name}</span>
+                </li>
+              ))
+            : remoteSuggestions.map((s) => (
+                <li
+                  key={s.id}
+                  role="option"
+                  aria-selected={false}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    pickRemote(s);
+                  }}
+                  className={cn(
+                    "flex cursor-pointer items-start gap-2 px-3 py-2 text-[13px] hover:bg-powder",
+                  )}
+                >
+                  <MapPin className="mt-0.5 size-4 shrink-0 text-gravel" />
+                  <span className="line-clamp-2">{s.place_name}</span>
+                </li>
+              ))}
         </ul>
       ) : null}
 
-      {fetchError ? (
-        <p className="text-[12px] text-danger">{fetchError}</p>
+      {useFallback && query.length >= 2 && localSuggestions.length === 0 ? (
+        <p className="text-[11px] text-gravel">
+          Eşleşme bulunamadı. İl veya büyük ilçe adı dene (örn. “Kadıköy”).
+        </p>
       ) : null}
+
       {error ? <p className="text-[12px] text-danger">{error}</p> : null}
     </div>
   );

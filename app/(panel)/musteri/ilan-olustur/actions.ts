@@ -35,16 +35,30 @@ export async function createListingDraftAction(
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "Oturum yok" };
 
-  // Distance Mapbox üzerinden — token yoksa haversine fallback
+  // Distance Mapbox üzerinden — token yoksa haversine × yol faktörü fallback
   let distanceKm: number;
-  try {
-    const route = await getRoute([pickup.lng, pickup.lat], [
-      dropoff.lng,
+  if (process.env.NEXT_PUBLIC_MAPBOX_TOKEN) {
+    try {
+      const route = await getRoute(
+        [pickup.lng, pickup.lat],
+        [dropoff.lng, dropoff.lat],
+      );
+      distanceKm = route.distanceKm;
+    } catch {
+      distanceKm = estimateRoadKm(
+        pickup.lat,
+        pickup.lng,
+        dropoff.lat,
+        dropoff.lng,
+      );
+    }
+  } else {
+    distanceKm = estimateRoadKm(
+      pickup.lat,
+      pickup.lng,
       dropoff.lat,
-    ]);
-    distanceKm = route.distanceKm;
-  } catch {
-    distanceKm = haversineKm(pickup.lat, pickup.lng, dropoff.lat, dropoff.lng);
+      dropoff.lng,
+    );
   }
 
   // Pet ağırlığını al (fiyat çarpanı için)
@@ -97,7 +111,7 @@ export async function redirectToListingAction(id: string): Promise<void> {
   redirect(`/musteri/${id}`);
 }
 
-function haversineKm(
+function estimateRoadKm(
   lat1: number,
   lng1: number,
   lat2: number,
@@ -110,5 +124,7 @@ function haversineKm(
   const a =
     Math.sin(dLat / 2) ** 2 +
     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
-  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)) * 10) / 10;
+  const greatCircle = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  // TR yol ağı için ortalama bükülme faktörü ~1.3
+  return Math.round(greatCircle * 1.3 * 10) / 10;
 }

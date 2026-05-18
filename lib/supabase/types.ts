@@ -21,6 +21,20 @@ export type KycDocType =
   | "plate_photo"
   | "vehicle_registration";
 export type KycDocStatus = "pending" | "approved" | "rejected";
+export type BookingStatus =
+  | "pending_payment"
+  | "accepted"
+  | "en_route"
+  | "delivered"
+  | "completed"
+  | "cancelled"
+  | "disputed";
+export type PaymentType =
+  | "listing_fee"
+  | "booking_commission"
+  | "booking_full"
+  | "refund";
+export type PaymentStatus = "pending" | "success" | "failed" | "refunded";
 
 export type Json =
   | string
@@ -343,6 +357,157 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      bookings: {
+        Row: {
+          id: string;
+          listing_id: string;
+          bid_id: string;
+          transporter_id: string;
+          customer_id: string;
+          agreed_price: number;
+          platform_fee: number;
+          status: BookingStatus;
+          iyzico_payment_ref: string | null;
+          paid_at: string | null;
+          started_at: string | null;
+          delivered_at: string | null;
+          completed_at: string | null;
+          cancelled_at: string | null;
+          cancelled_reason: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          listing_id: string;
+          bid_id: string;
+          transporter_id: string;
+          customer_id: string;
+          agreed_price: number;
+          platform_fee: number;
+          status?: BookingStatus;
+          iyzico_payment_ref?: string | null;
+          paid_at?: string | null;
+        };
+        Update: {
+          status?: BookingStatus;
+          iyzico_payment_ref?: string | null;
+          paid_at?: string | null;
+          started_at?: string | null;
+          delivered_at?: string | null;
+          completed_at?: string | null;
+          cancelled_at?: string | null;
+          cancelled_reason?: string | null;
+        };
+        Relationships: [];
+      };
+      conversations: {
+        Row: {
+          id: string;
+          listing_id: string;
+          customer_id: string;
+          transporter_id: string;
+          booking_id: string | null;
+          last_message_at: string | null;
+          customer_unread_count: number;
+          transporter_unread_count: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          listing_id: string;
+          customer_id: string;
+          transporter_id: string;
+          booking_id?: string | null;
+          last_message_at?: string | null;
+          customer_unread_count?: number;
+          transporter_unread_count?: number;
+        };
+        Update: {
+          booking_id?: string | null;
+          last_message_at?: string | null;
+          customer_unread_count?: number;
+          transporter_unread_count?: number;
+        };
+        Relationships: [];
+      };
+      messages: {
+        Row: {
+          id: string;
+          conversation_id: string;
+          sender_id: string;
+          body: string;
+          read_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          conversation_id: string;
+          sender_id: string;
+          body: string;
+          read_at?: string | null;
+        };
+        Update: {
+          read_at?: string | null;
+        };
+        Relationships: [];
+      };
+      payments: {
+        Row: {
+          id: string;
+          user_id: string;
+          type: PaymentType;
+          amount: number;
+          currency: string;
+          provider: string;
+          provider_ref: string | null;
+          status: PaymentStatus;
+          related_listing: string | null;
+          related_booking: string | null;
+          raw_response: Json | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          type: PaymentType;
+          amount: number;
+          currency?: string;
+          provider?: string;
+          provider_ref?: string | null;
+          status?: PaymentStatus;
+          related_listing?: string | null;
+          related_booking?: string | null;
+          raw_response?: Json | null;
+        };
+        Update: {
+          status?: PaymentStatus;
+          provider_ref?: string | null;
+          raw_response?: Json | null;
+        };
+        Relationships: [];
+      };
+      reviews: {
+        Row: {
+          id: string;
+          booking_id: string;
+          author_id: string;
+          target_id: string;
+          rating: number;
+          comment: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          booking_id: string;
+          author_id: string;
+          target_id: string;
+          rating: number;
+          comment?: string | null;
+        };
+        Update: never;
+        Relationships: [];
+      };
       kyc_documents: {
         Row: {
           id: string;
@@ -405,3 +570,8 @@ export type ContractTemplate =
 export type ContractSignature =
   Database["public"]["Tables"]["contract_signatures"]["Row"];
 export type KycDocument = Database["public"]["Tables"]["kyc_documents"]["Row"];
+export type Booking = Database["public"]["Tables"]["bookings"]["Row"];
+export type Conversation = Database["public"]["Tables"]["conversations"]["Row"];
+export type Message = Database["public"]["Tables"]["messages"]["Row"];
+export type Payment = Database["public"]["Tables"]["payments"]["Row"];
+export type Review = Database["public"]["Tables"]["reviews"]["Row"];
