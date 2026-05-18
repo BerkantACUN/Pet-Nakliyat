@@ -35,16 +35,29 @@ export async function completeOnboardingAction(
       ? `+90${phone.slice(1)}`
       : `+90${phone}`;
 
+  const nowIso = new Date().toISOString();
+  const fullName =
+    (user.user_metadata?.full_name as string | undefined) ??
+    user.email?.split("@")[0] ??
+    "Patiyolu kullanıcısı";
+
+  // Email-confirmation-gated signup'ta profile.insert RLS'e takılıp atlanmış olabilir.
+  // Upsert ile hem var olan satırı güncelliyoruz hem yoksa oluşturuyoruz.
   const { error: profileErr } = await supabase
     .from("profiles")
-    .update({
-      phone: normalizedPhone,
-      city,
-      default_role: defaultRole,
-      marketing_consent: marketingConsent,
-      onboarding_completed_at: new Date().toISOString(),
-    })
-    .eq("id", user.id);
+    .upsert(
+      {
+        id: user.id,
+        full_name: fullName,
+        phone: normalizedPhone,
+        city,
+        default_role: defaultRole,
+        marketing_consent: marketingConsent,
+        kvkk_consent_at: nowIso,
+        onboarding_completed_at: nowIso,
+      },
+      { onConflict: "id" },
+    );
 
   if (profileErr) {
     if (profileErr.code === "23505") {
@@ -56,11 +69,22 @@ export async function completeOnboardingAction(
     return { ok: false, error: profileErr.message };
   }
 
-  // Eğer default_role customer dışında bir rol seçildiyse o rolü de ekle
+  // Default customer rolü yoksa ekle (signup sırasında RLS atlamış olabilir)
+  await supabase
+    .from("user_roles")
+    .upsert(
+      { user_id: user.id, role: "customer" },
+      { onConflict: "user_id,role" },
+    );
+
+  // Seçilen rol customer değilse onu da ekle
   if (defaultRole !== "customer") {
     await supabase
       .from("user_roles")
-      .upsert({ user_id: user.id, role: defaultRole });
+      .upsert(
+        { user_id: user.id, role: defaultRole },
+        { onConflict: "user_id,role" },
+      );
   }
 
   revalidatePath("/", "layout");
