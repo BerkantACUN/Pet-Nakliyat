@@ -2,6 +2,8 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/admin";
 import { Toaster } from "@/components/ui/sonner";
 
+export const dynamic = "force-dynamic";
+
 const NAV = [
   { href: "/admin", label: "Anasayfa" },
   { href: "/admin/kyc", label: "KYC" },
