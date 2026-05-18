@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { requireOnboardedUser } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/marketing/Chip";
+import { PublishButton } from "@/components/listings/PublishButton";
+import { BidList } from "@/components/listings/BidList";
 import {
   formatPriceRange,
   formatDistanceKm,
@@ -164,29 +166,71 @@ export default async function IlanDetayPage({ params }: PageProps) {
           <h2 className="font-display text-[18px] leading-tight">Yayınla</h2>
           <p className="mt-1 text-[13px] text-gravel">
             {formatPriceTRY(LISTING_FEE_TRY)} yayın ücretiyle ilanını teklif
-            almaya açabilirsin.
+            almaya aç.
           </p>
-          <Button
-            variant="pill"
-            size="lg"
-            disabled
-            className="mt-4 w-full opacity-50"
-          >
-            Yayınla · {formatPriceTRY(LISTING_FEE_TRY)} (yakında)
-          </Button>
+          <div className="mt-4">
+            <PublishButton listingId={listing.id} />
+          </div>
           <p className="mt-2 text-center text-[11px] text-gravel">
-            Iyzico entegrasyonu sonraki sprint'te.
-          </p>
-        </div>
-      ) : listing.status === "published" ? (
-        <div className="rounded-3xl border border-chalk bg-powder p-5 text-center">
-          <div className="text-3xl" aria-hidden>📬</div>
-          <p className="mt-3 text-[13px] text-gravel">
-            İlan teklif almaya açık. Gelen teklifler burada görünecek.
+            Iyzico bağlanana kadar dev modunda ücretsiz.
           </p>
         </div>
       ) : null}
+
+      {/* Teklifler */}
+      {listing.status === "published" || listing.status === "closed" ? (
+        <BidsSection
+          listingId={listing.id}
+          listingClosed={listing.status === "closed"}
+        />
+      ) : null}
     </div>
+  );
+}
+
+async function BidsSection({
+  listingId,
+  listingClosed,
+}: {
+  listingId: string;
+  listingClosed: boolean;
+}) {
+  const supabase = await createClient();
+  const { data: bids } = await supabase
+    .from("bids")
+    .select("*")
+    .eq("listing_id", listingId)
+    .order("created_at", { ascending: false });
+
+  const enriched = await Promise.all(
+    (bids ?? []).map(async (b) => {
+      const [{ data: tProfile }, { data: tBase }] = await Promise.all([
+        supabase
+          .from("transporter_profiles")
+          .select("display_name,rating_avg,rating_count,completed_count")
+          .eq("user_id", b.transporter_id)
+          .maybeSingle(),
+        supabase
+          .from("public_profiles")
+          .select("full_name,avatar_url,city")
+          .eq("id", b.transporter_id)
+          .maybeSingle(),
+      ]);
+      return {
+        ...b,
+        transporter: tBase,
+        transporter_profile: tProfile,
+      };
+    }),
+  );
+
+  return (
+    <section className="space-y-3">
+      <h2 className="font-display text-[18px] leading-tight">
+        {listingClosed ? "Teklifler" : "Gelen teklifler"}
+      </h2>
+      <BidList bids={enriched} listingClosed={listingClosed} />
+    </section>
   );
 }
 

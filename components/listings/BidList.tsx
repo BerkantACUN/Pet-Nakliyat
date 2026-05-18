@@ -14,7 +14,7 @@ import type { Bid } from "@/lib/supabase/types";
 
 export interface BidWithTransporter extends Bid {
   transporter: {
-    full_name: string;
+    full_name: string | null;
     avatar_url: string | null;
     city: string | null;
   } | null;

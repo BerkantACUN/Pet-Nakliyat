@@ -43,11 +43,32 @@ export default async function PublicTransporterPage({ params }: PageProps) {
 
   if (!tp) notFound();
 
-  const { data: ownerProfile } = await supabase
-    .from("public_profiles")
-    .select("full_name, avatar_url, city")
-    .eq("id", tp.user_id)
-    .maybeSingle();
+  const [{ data: ownerProfile }, { data: reviewsRaw }] = await Promise.all([
+    supabase
+      .from("public_profiles")
+      .select("full_name, avatar_url, city")
+      .eq("id", tp.user_id)
+      .maybeSingle(),
+    supabase
+      .from("reviews")
+      .select("id,rating,comment,author_id,created_at")
+      .eq("target_id", tp.user_id)
+      .order("created_at", { ascending: false })
+      .limit(8),
+  ]);
+
+  const reviews = reviewsRaw ?? [];
+  const authorIds = reviews.map((r) => r.author_id);
+  const { data: reviewAuthors } =
+    authorIds.length > 0
+      ? await supabase
+          .from("public_profiles")
+          .select("id,full_name,city")
+          .in("id", authorIds)
+      : { data: [] };
+  const authorById = new Map(
+    (reviewAuthors ?? []).map((a) => [a.id, a] as const),
+  );
 
   const initials = (tp.display_name ?? "P")
     .split(/\s+/)
@@ -141,6 +162,47 @@ export default async function PublicTransporterPage({ params }: PageProps) {
           </InfoCard>
         </div>
       </section>
+
+      {reviews.length > 0 ? (
+        <section className="mx-auto max-w-3xl px-4 py-4">
+          <h2 className="mb-3 font-display text-[20px]">
+            Müşteri değerlendirmeleri
+          </h2>
+          <ul className="space-y-2">
+            {reviews.map((r) => {
+              const author = authorById.get(r.author_id);
+              return (
+                <li
+                  key={r.id}
+                  className="rounded-3xl border border-chalk bg-white p-4"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-[13px] font-medium">
+                      {author?.full_name ?? "Müşteri"}
+                    </div>
+                    <div className="font-mono text-[10px] uppercase tracking-[0.15em] text-paw">
+                      {"★".repeat(r.rating)}
+                      <span className="text-chalk">
+                        {"★".repeat(5 - r.rating)}
+                      </span>
+                    </div>
+                  </div>
+                  {r.comment ? (
+                    <p className="mt-2 text-[13px] text-gravel">“{r.comment}”</p>
+                  ) : null}
+                  <p className="mt-1 text-[10px] text-gravel">
+                    {new Date(r.created_at).toLocaleDateString("tr-TR", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null}
 
       <section className="mx-auto max-w-3xl px-4 py-8 text-center">
         <p className="text-[13px] text-gravel">
