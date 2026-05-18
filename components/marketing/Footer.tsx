@@ -25,6 +25,9 @@ export function Footer() {
             <Link href="/tasiyici-ol" className="text-obsidian hover:text-gravel">
               Taşıyıcı ol
             </Link>
+            <Link href="/tasiyicilar" className="text-obsidian hover:text-gravel">
+              Taşıyıcılar
+            </Link>
             <Link href="/sozlesme-ornegi" className="text-obsidian hover:text-gravel">
               Sözleşme
             </Link>

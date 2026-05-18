@@ -36,6 +36,7 @@ export function Navbar() {
 
         <div className="hidden items-center gap-1 md:flex">
           <NavLink href="/nasil-calisir">Nasıl çalışır</NavLink>
+          <NavLink href="/tasiyicilar">Taşıyıcılar</NavLink>
           <NavLink href="/tasiyici-ol">Taşıyıcı ol</NavLink>
           <NavLink href="/sozlesme-ornegi">Sözleşme</NavLink>
         </div>
