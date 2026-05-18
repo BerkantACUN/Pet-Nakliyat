@@ -87,6 +87,39 @@ export async function completeOnboardingAction(
       );
   }
 
+  // Taşıyıcı seçildiyse transporter_profiles satırını da auto-create et,
+  // yoksa kullanıcı /sozlesme → /tasiyici/kyc → /profil arasında loop'a giriyor.
+  if (defaultRole === "transporter") {
+    const baseSlug = slugify(fullName);
+    const slug = `${baseSlug}-${user.id.slice(0, 6)}`;
+    await supabase.from("transporter_profiles").upsert(
+      {
+        user_id: user.id,
+        display_name: fullName,
+        slug,
+        base_rate_per_km: 8,
+        min_charge: 350,
+      },
+      { onConflict: "user_id", ignoreDuplicates: true },
+    );
+  }
+
   revalidatePath("/", "layout");
   return { ok: true };
+}
+
+function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/ı/g, "i")
+    .replace(/ğ/g, "g")
+    .replace(/ü/g, "u")
+    .replace(/ş/g, "s")
+    .replace(/ö/g, "o")
+    .replace(/ç/g, "c")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 60);
 }

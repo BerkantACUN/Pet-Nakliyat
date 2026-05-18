@@ -48,13 +48,15 @@ export default async function ProfilePage() {
         <section className="rounded-3xl border border-chalk bg-white p-5">
           <div className="mb-4 flex items-center justify-between gap-2">
             <h2 className="font-display text-[18px]">Taşıyıcı bilgileri</h2>
-            <Button
-              variant="pill-ghost"
-              size="sm"
-              render={<Link href={`/tasiyicilar/${tp?.slug ?? ""}`} />}
-            >
-              Public profil ↗
-            </Button>
+            {tp ? (
+              <Button
+                variant="pill-ghost"
+                size="sm"
+                render={<Link href={`/tasiyicilar/${tp.slug}`} />}
+              >
+                Public profil ↗
+              </Button>
+            ) : null}
           </div>
           {tp ? (
             <TransporterProfileForm
@@ -70,9 +72,15 @@ export default async function ProfilePage() {
               }}
             />
           ) : (
-            <p className="text-[13px] text-gravel">
-              Taşıyıcı profili henüz hazır değil.
-            </p>
+            <div className="rounded-2xl bg-powder/40 p-4">
+              <p className="text-[13px] text-gravel">
+                Taşıyıcı profilin henüz oluşturulmamış. Aşağıdaki butona
+                tıklayarak sözleşme + KYC adımlarını başlatabilirsin.
+              </p>
+              <div className="mt-3">
+                <EnableTransporterButton />
+              </div>
+            </div>
           )}
         </section>
       ) : (
