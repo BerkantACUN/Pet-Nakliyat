@@ -86,7 +86,31 @@ export async function signInAction(input: SignInInput): Promise<ActionResult> {
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
 
-  if (error) return { ok: false, error: "E-posta veya şifre hatalı" };
+  if (error) {
+    const code = (error as { code?: string }).code ?? "";
+    const msg = error.message ?? "";
+
+    if (code === "email_not_confirmed" || msg.toLowerCase().includes("not confirmed")) {
+      return {
+        ok: false,
+        error:
+          "E-postanı henüz onaylamamışsın. Gelen kutuna (ve spam klasörüne) Patiyolu/Supabase'den gelen onay linkine tıkla, sonra tekrar dene.",
+      };
+    }
+    if (code === "invalid_credentials") {
+      return { ok: false, error: "E-posta veya şifre hatalı" };
+    }
+    if (code === "user_not_found") {
+      return { ok: false, error: "Bu e-postayla kayıtlı hesap bulunamadı" };
+    }
+    if (code === "over_request_rate_limit" || msg.toLowerCase().includes("rate")) {
+      return {
+        ok: false,
+        error: "Çok fazla deneme oldu. Birkaç dakika sonra tekrar dene.",
+      };
+    }
+    return { ok: false, error: msg || "Giriş yapılamadı" };
+  }
 
   revalidatePath("/", "layout");
   return { ok: true };
