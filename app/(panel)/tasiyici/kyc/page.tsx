@@ -46,11 +46,45 @@ export default async function KycPage() {
   const supabase = await createClient();
 
   // Sözleşme imzalı mı?
-  const { data: tp } = await supabase
+  let { data: tp } = await supabase
     .from("transporter_profiles")
     .select("kyc_status, contract_signature_id, contract_signed_at")
     .eq("user_id", user.id)
     .maybeSingle();
+
+  // Backfill: profil var ama sözleşme link'i yoksa, contract_signatures tablosunda
+  // ara — imzalanmış ama eski race condition yüzünden link'lenmemiş olabilir.
+  if (tp && !tp.contract_signature_id) {
+    const { data: tpl } = await supabase
+      .from("contract_templates")
+      .select("id")
+      .eq("audience", "transporter")
+      .order("effective_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (tpl) {
+      const { data: sig } = await supabase
+        .from("contract_signatures")
+        .select("id, signed_at")
+        .eq("user_id", user.id)
+        .eq("template_id", tpl.id)
+        .maybeSingle();
+      if (sig) {
+        await supabase
+          .from("transporter_profiles")
+          .update({
+            contract_signature_id: sig.id,
+            contract_signed_at: sig.signed_at,
+          })
+          .eq("user_id", user.id);
+        tp = {
+          ...tp,
+          contract_signature_id: sig.id,
+          contract_signed_at: sig.signed_at,
+        };
+      }
+    }
+  }
 
   if (!tp) {
     return (

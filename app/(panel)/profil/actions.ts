@@ -126,8 +126,37 @@ export async function enableTransporterAction(): Promise<ActionResult> {
     return { ok: false, error: error.message };
   }
 
+  // Daha önce sözleşme imzalanmışsa, contract_signatures tablosundan
+  // backfill et — eski race condition'da link kaybolmuş olabilir.
+  const { data: tpl } = await supabase
+    .from("contract_templates")
+    .select("id")
+    .eq("audience", "transporter")
+    .order("effective_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (tpl) {
+    const { data: sig } = await supabase
+      .from("contract_signatures")
+      .select("id, signed_at")
+      .eq("user_id", user.id)
+      .eq("template_id", tpl.id)
+      .maybeSingle();
+    if (sig) {
+      await supabase
+        .from("transporter_profiles")
+        .update({
+          contract_signature_id: sig.id,
+          contract_signed_at: sig.signed_at,
+        })
+        .eq("user_id", user.id);
+    }
+  }
+
   revalidatePath("/profil");
   revalidatePath("/panel");
+  revalidatePath("/sozlesme");
+  revalidatePath("/tasiyici/kyc");
   return { ok: true };
 }
 
