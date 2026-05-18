@@ -1,6 +1,6 @@
 .env.local
 .env*.local
-docs/
-supabase/
-scripts/
+/docs/
+/supabase/
+/scripts/
 PLAN.md
