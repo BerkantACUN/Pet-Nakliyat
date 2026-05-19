@@ -2,16 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Home,
-  Package,
-  MessageCircle,
-  User,
-  PawPrint,
-  Truck,
-  Inbox,
-  Plus,
-} from "lucide-react";
+import { Home, Package, User, PawPrint, Truck, Inbox, Plus, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AppRole } from "@/lib/supabase/types";
 import { detectActiveRole } from "./role-context";
@@ -41,10 +32,10 @@ const CUSTOMER_ITEMS: BottomNavItem[] = [
     match: (p) => p.startsWith("/musteri/petlerim"),
   },
   {
-    href: "/mesajlar",
-    label: "Mesajlar",
-    icon: MessageCircle,
-    match: (p) => p.startsWith("/mesajlar"),
+    href: "/bildirimler",
+    label: "Bildirim",
+    icon: Bell,
+    match: (p) => p.startsWith("/bildirimler"),
   },
   {
     href: "/profil",
@@ -70,10 +61,10 @@ const TRANSPORTER_ITEMS: BottomNavItem[] = [
       p.startsWith("/tasiyici/tekliflerim") || p.startsWith("/tasiyici/booking"),
   },
   {
-    href: "/mesajlar",
-    label: "Mesajlar",
-    icon: MessageCircle,
-    match: (p) => p.startsWith("/mesajlar"),
+    href: "/bildirimler",
+    label: "Bildirim",
+    icon: Bell,
+    match: (p) => p.startsWith("/bildirimler"),
   },
   {
     href: "/profil",
@@ -92,10 +83,10 @@ const NEUTRAL_ITEMS: BottomNavItem[] = [
     match: (p) => p === "/profil",
   },
   {
-    href: "/mesajlar",
-    label: "Mesajlar",
-    icon: MessageCircle,
-    match: (p) => p.startsWith("/mesajlar"),
+    href: "/bildirimler",
+    label: "Bildirim",
+    icon: Bell,
+    match: (p) => p.startsWith("/bildirimler"),
   },
   {
     href: "/ayarlar",

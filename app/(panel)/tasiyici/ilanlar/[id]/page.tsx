@@ -32,10 +32,11 @@ export default async function TasiyiciIlanDetayPage({ params }: PageProps) {
     .from("listings")
     .select("*")
     .eq("id", id)
-    .eq("status", "published")
     .maybeSingle();
 
   if (!listing) notFound();
+
+  const listingClosed = listing.status !== "published";
 
   // Pet bilgisi
   let pet: Pet | null = null;
@@ -160,7 +161,11 @@ export default async function TasiyiciIlanDetayPage({ params }: PageProps) {
       </section>
 
       {/* Bid CTA */}
-      {isOwnListing ? (
+      {listingClosed && !existingBid ? (
+        <div className="rounded-3xl border border-chalk bg-powder p-5 text-center text-[13px] text-gravel">
+          Bu ilan artık <strong className="text-obsidian">{listingStatusLabel(listing.status)}</strong>. Yeni teklif alınamaz.
+        </div>
+      ) : isOwnListing ? (
         <div className="rounded-3xl border border-chalk bg-powder p-4 text-center text-[12px] text-gravel">
           Bu senin ilanın. Kendi ilanına teklif atamazsın.
         </div>
@@ -173,10 +178,23 @@ export default async function TasiyiciIlanDetayPage({ params }: PageProps) {
             <span className="font-display text-[28px] leading-none">
               {formatPriceTRY(existingBid.price)}
             </span>
-            <Chip className="bg-eggshell">{existingBid.status}</Chip>
+            <Chip className="bg-eggshell">{bidStatusLabel(existingBid.status)}</Chip>
           </div>
           {existingBid.message ? (
             <p className="mt-2 text-[12px] text-gravel">{existingBid.message}</p>
+          ) : null}
+          {existingBid.status === "accepted" ? (
+            <p className="mt-3 rounded-2xl bg-success/10 px-3 py-2 text-[12px] text-success">
+              Teklifin kabul edildi 🎉 Müşteri ödeme aşamasında.
+            </p>
+          ) : existingBid.status === "rejected" ? (
+            <p className="mt-3 rounded-2xl bg-fog/10 px-3 py-2 text-[12px] text-gravel">
+              Teklifin reddedildi.
+            </p>
+          ) : listingClosed ? (
+            <p className="mt-3 rounded-2xl bg-fog/10 px-3 py-2 text-[12px] text-gravel">
+              İlan kapandı. Müşteri başka bir teklifi seçmiş olabilir.
+            </p>
           ) : null}
         </div>
       ) : (
@@ -197,4 +215,23 @@ export default async function TasiyiciIlanDetayPage({ params }: PageProps) {
 
 function speciesEmoji(s: Pet["species"]): string {
   return { dog: "🐶", cat: "🐱", bird: "🐦", rabbit: "🐰", other: "🐾" }[s];
+}
+
+function listingStatusLabel(s: Listing["status"]): string {
+  return {
+    draft: "taslakta",
+    published: "yayında",
+    closed: "kapandı",
+    expired: "süresi doldu",
+    cancelled: "iptal edildi",
+  }[s];
+}
+
+function bidStatusLabel(s: Bid["status"]): string {
+  return {
+    pending: "Bekliyor",
+    accepted: "Kabul edildi",
+    rejected: "Reddedildi",
+    withdrawn: "Geri çekildi",
+  }[s];
 }

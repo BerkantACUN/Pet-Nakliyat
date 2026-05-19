@@ -1,6 +1,7 @@
 import { Topbar } from "./Topbar";
 import { BottomNav } from "./BottomNav";
 import { Toaster } from "@/components/ui/sonner";
+import { ChatFab } from "@/components/chat/ChatFab";
 import type { AppRole } from "@/lib/supabase/types";
 
 interface AppShellProps {
@@ -10,6 +11,7 @@ interface AppShellProps {
   avatarUrl: string | null;
   roles: AppRole[];
   defaultRole: AppRole;
+  userId: string;
 }
 
 export function AppShell({
@@ -19,6 +21,7 @@ export function AppShell({
   avatarUrl,
   roles,
   defaultRole,
+  userId,
 }: AppShellProps) {
   return (
     <div className="flex min-h-screen flex-col bg-eggshell">
@@ -33,6 +36,7 @@ export function AppShell({
         {children}
       </main>
       <BottomNav roles={roles} defaultRole={defaultRole} />
+      <ChatFab currentUserId={userId} />
       <Toaster richColors position="top-center" />
     </div>
   );

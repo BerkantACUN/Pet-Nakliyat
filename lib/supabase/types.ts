@@ -567,6 +567,51 @@ export type Database = {
         };
         Relationships: [];
       };
+      notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          type:
+            | "follow"
+            | "bid_received"
+            | "bid_accepted"
+            | "bid_rejected"
+            | "message"
+            | "booking_update"
+            | "review_received";
+          actor_id: string | null;
+          related_listing: string | null;
+          related_bid: string | null;
+          related_booking: string | null;
+          related_conversation: string | null;
+          payload: Json | null;
+          read_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          type:
+            | "follow"
+            | "bid_received"
+            | "bid_accepted"
+            | "bid_rejected"
+            | "message"
+            | "booking_update"
+            | "review_received";
+          actor_id?: string | null;
+          related_listing?: string | null;
+          related_bid?: string | null;
+          related_booking?: string | null;
+          related_conversation?: string | null;
+          payload?: Json | null;
+          read_at?: string | null;
+        };
+        Update: {
+          read_at?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       public_profiles: {
@@ -625,3 +670,6 @@ export type Conversation = Database["public"]["Tables"]["conversations"]["Row"];
 export type Message = Database["public"]["Tables"]["messages"]["Row"];
 export type Payment = Database["public"]["Tables"]["payments"]["Row"];
 export type Review = Database["public"]["Tables"]["reviews"]["Row"];
+export type Follow = Database["public"]["Tables"]["follows"]["Row"];
+export type Notification = Database["public"]["Tables"]["notifications"]["Row"];
+export type NotificationType = Notification["type"];

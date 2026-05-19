@@ -16,6 +16,7 @@ export default async function PanelLayout({
 
   return (
     <AppShell
+      userId={user.id}
       name={user.profile.full_name}
       email={user.email}
       avatarUrl={user.profile.avatar_url}

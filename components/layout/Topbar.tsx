@@ -17,6 +17,7 @@ import { signOutAction } from "@/app/(auth)/actions";
 import type { AppRole } from "@/lib/supabase/types";
 import { cn } from "@/lib/utils";
 import { detectActiveRole } from "./role-context";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 const ROLE_META: Record<AppRole, { label: string; emoji: string; href: string }> =
   {
@@ -59,6 +60,7 @@ export function Topbar({
 
         <div className="flex items-center gap-2">
           <RoleSwitcher roles={roles} activeRole={activeRole} />
+          <NotificationBell />
 
           <DropdownMenu open={open} onOpenChange={setOpen}>
             <DropdownMenuTrigger
