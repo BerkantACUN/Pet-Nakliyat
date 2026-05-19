@@ -5,6 +5,8 @@ import { ProfileForm } from "@/components/profile/ProfileForm";
 import { TransporterProfileForm } from "@/components/profile/TransporterProfileForm";
 import { EnableTransporterButton } from "@/components/profile/EnableTransporterButton";
 import { EnableCustomerButton } from "@/components/profile/EnableCustomerButton";
+import { AvatarUploader } from "@/components/profile/AvatarUploader";
+import { BioEditor } from "@/components/profile/BioEditor";
 import { Button } from "@/components/ui/button";
 
 export const metadata = { title: "Profil — Patiyolu" };
@@ -25,6 +27,12 @@ export default async function ProfilePage() {
         .maybeSingle()
     : { data: null };
 
+  const { data: fullProfile } = await supabase
+    .from("profiles")
+    .select("bio, avatar_url")
+    .eq("id", user.id)
+    .maybeSingle();
+
   return (
     <div className="space-y-6">
       <header className="flex flex-col gap-1">
@@ -36,6 +44,14 @@ export default async function ProfilePage() {
           Adın, iletişim bilgilerin ve rollerin.
         </p>
       </header>
+
+      <section className="rounded-3xl border border-chalk bg-white p-5 space-y-5">
+        <AvatarUploader
+          avatarUrl={fullProfile?.avatar_url ?? user.profile!.avatar_url}
+          name={user.profile!.full_name}
+        />
+        <BioEditor defaultBio={fullProfile?.bio ?? ""} />
+      </section>
 
       <section className="rounded-3xl border border-chalk bg-white p-5">
         <h2 className="mb-4 font-display text-[18px]">Kişisel bilgiler</h2>

@@ -54,6 +54,9 @@ export type Database = {
           avatar_url: string | null;
           phone: string | null;
           city: string | null;
+          bio: string | null;
+          cover_url: string | null;
+          last_seen_at: string | null;
           kvkk_consent_at: string;
           marketing_consent: boolean;
           default_role: AppRole;
@@ -67,6 +70,9 @@ export type Database = {
           avatar_url?: string | null;
           phone?: string | null;
           city?: string | null;
+          bio?: string | null;
+          cover_url?: string | null;
+          last_seen_at?: string | null;
           kvkk_consent_at: string;
           marketing_consent?: boolean;
           default_role?: AppRole;
@@ -80,6 +86,9 @@ export type Database = {
           avatar_url?: string | null;
           phone?: string | null;
           city?: string | null;
+          bio?: string | null;
+          cover_url?: string | null;
+          last_seen_at?: string | null;
           kvkk_consent_at?: string;
           marketing_consent?: boolean;
           default_role?: AppRole;
@@ -404,7 +413,7 @@ export type Database = {
       conversations: {
         Row: {
           id: string;
-          listing_id: string;
+          listing_id: string | null;
           customer_id: string;
           transporter_id: string;
           booking_id: string | null;
@@ -415,7 +424,7 @@ export type Database = {
         };
         Insert: {
           id?: string;
-          listing_id: string;
+          listing_id?: string | null;
           customer_id: string;
           transporter_id: string;
           booking_id?: string | null;
@@ -540,6 +549,24 @@ export type Database = {
         };
         Relationships: [];
       };
+      follows: {
+        Row: {
+          follower_id: string;
+          following_id: string;
+          created_at: string;
+        };
+        Insert: {
+          follower_id: string;
+          following_id: string;
+          created_at?: string;
+        };
+        Update: {
+          follower_id?: string;
+          following_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       public_profiles: {
@@ -548,6 +575,29 @@ export type Database = {
           full_name: string | null;
           avatar_url: string | null;
           city: string | null;
+        };
+        Relationships: [];
+      };
+      profile_stats: {
+        Row: {
+          id: string;
+          full_name: string;
+          avatar_url: string | null;
+          cover_url: string | null;
+          bio: string | null;
+          city: string | null;
+          created_at: string;
+          last_seen_at: string | null;
+          rating_avg: number;
+          rating_count: number;
+          completed_count: number;
+          service_cities: string[] | null;
+          vehicle_type: VehicleType | null;
+          transporter_slug: string | null;
+          is_transporter: boolean;
+          is_customer: boolean;
+          followers_count: number;
+          following_count: number;
         };
         Relationships: [];
       };

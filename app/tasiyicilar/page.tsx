@@ -2,8 +2,8 @@ import Link from "next/link";
 import { ArrowRight, Star, Truck, ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { MarketingShell } from "@/components/marketing/MarketingShell";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Chip } from "@/components/marketing/Chip";
-import { Button } from "@/components/ui/button";
 
 export const metadata = {
   title: "Doğrulanmış taşıyıcılar — Patiyolu",
@@ -29,12 +29,14 @@ interface TransporterRow {
   rating_avg: number | null;
   rating_count: number | null;
   completed_count: number | null;
+  avatar_url: string | null;
+  city: string | null;
 }
 
 export default async function TasiyicilarPage() {
   const supabase = await createClient();
 
-  const { data } = await supabase
+  const { data: tps } = await supabase
     .from("transporter_profiles")
     .select(
       "user_id, display_name, slug, bio, vehicle_type, service_cities, base_rate_per_km, min_charge, rating_avg, rating_count, completed_count",
@@ -44,7 +46,37 @@ export default async function TasiyicilarPage() {
     .order("rating_avg", { ascending: false, nullsFirst: false })
     .order("completed_count", { ascending: false, nullsFirst: false });
 
-  const list = (data ?? []) as TransporterRow[];
+  const userIds = (tps ?? []).map((t) => t.user_id);
+  const { data: profileRows } =
+    userIds.length > 0
+      ? await supabase
+          .from("public_profiles")
+          .select("id, avatar_url, city")
+          .in("id", userIds)
+      : { data: [] };
+
+  const profileById = new Map(
+    (profileRows ?? []).map((p) => [p.id, p] as const),
+  );
+
+  const list: TransporterRow[] = (tps ?? []).map((row) => {
+    const profile = profileById.get(row.user_id);
+    return {
+      user_id: row.user_id,
+      display_name: row.display_name,
+      slug: row.slug,
+      bio: row.bio,
+      vehicle_type: row.vehicle_type,
+      service_cities: row.service_cities,
+      base_rate_per_km: row.base_rate_per_km,
+      min_charge: row.min_charge,
+      rating_avg: row.rating_avg,
+      rating_count: row.rating_count,
+      completed_count: row.completed_count,
+      avatar_url: profile?.avatar_url ?? null,
+      city: profile?.city ?? null,
+    };
+  });
 
   return (
     <MarketingShell>
@@ -89,13 +121,21 @@ function TransporterCard({ tp }: { tp: TransporterRow }) {
 
   return (
     <Link
-      href={`/tasiyicilar/${tp.slug}`}
+      href={`/u/${tp.user_id}`}
       className="group flex flex-col gap-3 rounded-3xl border border-chalk bg-white p-5 transition hover:border-fog hover:shadow-[0_8px_28px_-22px_rgba(17,17,17,0.25)]"
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start gap-3">
+        <Avatar className="size-14 shrink-0 border border-chalk">
+          {tp.avatar_url ? (
+            <AvatarImage src={tp.avatar_url} alt={tp.display_name} />
+          ) : null}
+          <AvatarFallback className="bg-paw/20 text-[16px] font-medium text-obsidian">
+            {initials(tp.display_name)}
+          </AvatarFallback>
+        </Avatar>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h3 className="truncate font-display text-[20px] leading-tight">
+            <h3 className="truncate font-display text-[19px] leading-tight">
               {tp.display_name}
             </h3>
             <ShieldCheck
@@ -103,25 +143,23 @@ function TransporterCard({ tp }: { tp: TransporterRow }) {
               aria-label="Doğrulanmış"
             />
           </div>
-          {tp.vehicle_type ? (
-            <div className="mt-1 inline-flex items-center gap-1 text-[12px] text-gravel">
-              <Truck className="size-3.5" aria-hidden />
-              {VEHICLE_LABEL[tp.vehicle_type] ?? tp.vehicle_type}
-            </div>
-          ) : null}
+          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[12px] text-gravel">
+            {tp.city ? <span>{tp.city}</span> : null}
+            {tp.vehicle_type ? (
+              <span className="inline-flex items-center gap-1">
+                <Truck className="size-3" aria-hidden />
+                {VEHICLE_LABEL[tp.vehicle_type] ?? tp.vehicle_type}
+              </span>
+            ) : null}
+          </div>
         </div>
         {rating ? (
           <div className="shrink-0 rounded-full bg-eggshell px-3 py-1">
             <span className="inline-flex items-center gap-1 text-[13px] font-medium">
-              <Star
-                className="size-3.5 fill-paw text-paw"
-                aria-hidden
-              />
+              <Star className="size-3.5 fill-paw text-paw" aria-hidden />
               {rating}
             </span>
-            <span className="ml-1 text-[11px] text-gravel">
-              ({ratingCount})
-            </span>
+            <span className="ml-1 text-[11px] text-gravel">({ratingCount})</span>
           </div>
         ) : (
           <div className="shrink-0 rounded-full bg-powder px-3 py-1 text-[11px] text-gravel">
@@ -190,17 +228,28 @@ function EmptyState() {
         taşıyıcılar burada listelenecek.
       </p>
       <div className="mt-5 flex flex-wrap justify-center gap-2">
-        <Button variant="pill" size="lg" render={<Link href="/tasiyici-ol" />}>
+        <Link
+          href="/tasiyici-ol"
+          className="inline-flex items-center gap-1.5 rounded-pill bg-obsidian px-5 py-2.5 text-[13px] font-medium text-eggshell transition hover:bg-obsidian/85"
+        >
           Taşıyıcı ol →
-        </Button>
-        <Button
-          variant="pill-outline"
-          size="lg"
-          render={<Link href="/" />}
+        </Link>
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 rounded-pill border border-chalk bg-white px-5 py-2.5 text-[13px] font-medium hover:bg-powder"
         >
           Anasayfa
-        </Button>
+        </Link>
       </div>
     </div>
   );
+}
+
+function initials(name: string): string {
+  return name
+    .split(" ")
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 }

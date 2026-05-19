@@ -88,6 +88,86 @@ function slugify(s: string): string {
     .slice(0, 60);
 }
 
+const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
+const ALLOWED_AVATAR_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/avif",
+]);
+
+export async function uploadAvatarAction(
+  formData: FormData,
+): Promise<ActionResult & { url?: string }> {
+  const file = formData.get("file");
+  if (!(file instanceof File)) {
+    return { ok: false, error: "Dosya alınamadı" };
+  }
+  if (file.size > MAX_AVATAR_BYTES) {
+    return { ok: false, error: "Maks 5 MB olmalı" };
+  }
+  if (!ALLOWED_AVATAR_TYPES.has(file.type)) {
+    return { ok: false, error: "JPG / PNG / WEBP / AVIF kabul ediliyor" };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Oturum yok" };
+
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+  const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+
+  const { error: uploadErr } = await supabase.storage
+    .from("avatars")
+    .upload(path, file, { contentType: file.type, upsert: false });
+  if (uploadErr) return { ok: false, error: uploadErr.message };
+
+  const { data: publicUrl } = supabase.storage
+    .from("avatars")
+    .getPublicUrl(path);
+
+  const { error: updateErr } = await supabase
+    .from("profiles")
+    .update({ avatar_url: publicUrl.publicUrl })
+    .eq("id", user.id);
+  if (updateErr) return { ok: false, error: updateErr.message };
+
+  revalidatePath("/profil");
+  revalidatePath("/panel");
+  revalidatePath("/musteri");
+  revalidatePath("/tasiyici");
+  return { ok: true, url: publicUrl.publicUrl };
+}
+
+const bioSchema = z.object({
+  bio: z.string().max(280, "En fazla 280 karakter").optional().nullable(),
+});
+
+export async function updateBioAction(input: {
+  bio: string;
+}): Promise<ActionResult> {
+  const parsed = bioSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, fieldErrors: flattenZodError(parsed.error) };
+  }
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Oturum yok" };
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ bio: parsed.data.bio ?? null })
+    .eq("id", user.id);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/profil");
+  return { ok: true };
+}
+
 export async function enableCustomerAction(): Promise<ActionResult> {
   const supabase = await createClient();
   const {

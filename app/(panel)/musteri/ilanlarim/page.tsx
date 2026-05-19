@@ -2,12 +2,12 @@ import Link from "next/link";
 import { Plus, ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireOnboardedUser } from "@/lib/auth";
-import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/marketing/Chip";
 import { formatPriceRange, formatDistanceKm } from "@/lib/utils";
 import type { Listing } from "@/lib/supabase/types";
 
 export const metadata = { title: "İlanlarım · Patiyolu" };
+export const dynamic = "force-dynamic";
 
 const STATUS_LABEL: Record<Listing["status"], string> = {
   draft: "Taslak",
@@ -45,29 +45,28 @@ export default async function IlanlarimPage() {
           </span>
           <h1 className="font-display text-[28px] leading-tight">İlanlarım</h1>
         </div>
-        <Button
-          variant="pill"
-          size="sm"
-          render={<Link href="/musteri/ilan-olustur" />}
+        <Link
+          href="/musteri/ilan-olustur"
+          className="inline-flex items-center gap-1 rounded-pill bg-obsidian px-4 py-2 text-[12px] font-medium text-eggshell transition hover:bg-obsidian/85"
         >
           <Plus className="size-3.5" /> Yeni
-        </Button>
+        </Link>
       </header>
 
       {list.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-chalk bg-powder p-6 text-center">
-          <div className="text-3xl" aria-hidden>📍</div>
+          <div className="text-3xl" aria-hidden>
+            📍
+          </div>
           <p className="mt-3 text-[14px] text-gravel">
             Henüz ilan açmadın. Pati yolculuğun nereden başlayacak?
           </p>
-          <Button
-            variant="pill"
-            size="lg"
-            className="mt-4"
-            render={<Link href="/musteri/ilan-olustur" />}
+          <Link
+            href="/musteri/ilan-olustur"
+            className="mt-4 inline-flex items-center gap-1.5 rounded-pill bg-obsidian px-5 py-2.5 text-[13px] font-medium text-eggshell transition hover:bg-obsidian/85"
           >
-            <Plus className="size-3.5" /> İlk ilanını aç
-          </Button>
+            <Plus className="size-4" /> İlk ilanını aç
+          </Link>
         </div>
       ) : (
         <div className="space-y-3">
@@ -84,9 +83,7 @@ export default async function IlanlarimPage() {
                     style={{ background: STATUS_DOT[l.status] }}
                     aria-hidden
                   />
-                  <Chip className="bg-eggshell">
-                    {STATUS_LABEL[l.status]}
-                  </Chip>
+                  <Chip className="bg-eggshell">{STATUS_LABEL[l.status]}</Chip>
                 </div>
                 <ArrowRight className="size-4 text-gravel transition group-hover:translate-x-0.5 group-hover:text-obsidian" />
               </div>

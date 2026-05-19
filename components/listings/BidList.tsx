@@ -1,9 +1,11 @@
 "use client";
 
 import { useTransition } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 import { Check, X, Clock, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Chip } from "@/components/marketing/Chip";
 import {
   acceptBidAction,
@@ -89,24 +91,38 @@ function BidCard({
     bid.transporter_profile?.display_name ??
     bid.transporter?.full_name ??
     "Taşıyıcı";
+  const avatar = bid.transporter?.avatar_url ?? null;
 
   return (
     <article className="rounded-3xl border border-chalk bg-white p-4">
       <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="font-display text-[17px] leading-tight">{name}</span>
-            <Chip className="bg-eggshell text-[11px]">
-              <Star className="size-3 fill-paw text-paw" />{" "}
-              {(bid.transporter_profile?.rating_avg ?? 0).toFixed(1)} (
-              {bid.transporter_profile?.rating_count ?? 0})
-            </Chip>
+        <Link
+          href={`/u/${bid.transporter_id}`}
+          className="group flex flex-1 items-start gap-3 hover:opacity-90"
+        >
+          <Avatar className="size-12 shrink-0 border border-chalk">
+            {avatar ? <AvatarImage src={avatar} alt={name} /> : null}
+            <AvatarFallback className="bg-paw/20 text-[14px] font-medium text-obsidian">
+              {initials(name)}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-display text-[17px] leading-tight group-hover:underline">
+                {name}
+              </span>
+              <Chip className="bg-eggshell text-[11px]">
+                <Star className="size-3 fill-paw text-paw" />{" "}
+                {(bid.transporter_profile?.rating_avg ?? 0).toFixed(1)} (
+                {bid.transporter_profile?.rating_count ?? 0})
+              </Chip>
+            </div>
+            <div className="mt-1 text-[11px] text-gravel">
+              {bid.transporter?.city ?? "—"} ·{" "}
+              {bid.transporter_profile?.completed_count ?? 0} tamamlanmış nakliyat
+            </div>
           </div>
-          <div className="mt-1 text-[11px] text-gravel">
-            {bid.transporter?.city ?? "—"} ·{" "}
-            {bid.transporter_profile?.completed_count ?? 0} tamamlanmış nakliyat
-          </div>
-        </div>
+        </Link>
         <div className="text-right">
           <div className="font-display text-[22px] leading-none">
             {formatPriceTRY(bid.price)}
@@ -163,4 +179,13 @@ function BidCard({
       )}
     </article>
   );
+}
+
+function initials(name: string): string {
+  return name
+    .split(" ")
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 }

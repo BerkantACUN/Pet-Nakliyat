@@ -31,6 +31,14 @@ export default async function ChatDetailPage({ params }: PageProps) {
   const otherId =
     conv.customer_id === user.id ? conv.transporter_id : conv.customer_id;
 
+  const listingPromise = conv.listing_id
+    ? supabase
+        .from("listings")
+        .select("pickup_city,dropoff_city")
+        .eq("id", conv.listing_id)
+        .maybeSingle()
+    : Promise.resolve({ data: null });
+
   const [{ data: other }, { data: messages }, { data: listing }] =
     await Promise.all([
       supabase
@@ -44,11 +52,7 @@ export default async function ChatDetailPage({ params }: PageProps) {
         .eq("conversation_id", conv.id)
         .order("created_at", { ascending: true })
         .limit(200),
-      supabase
-        .from("listings")
-        .select("pickup_city,dropoff_city")
-        .eq("id", conv.listing_id)
-        .maybeSingle(),
+      listingPromise,
     ]);
 
   const bookingHref = conv.booking_id
