@@ -9,7 +9,7 @@ interface AppShellProps {
   email: string | null;
   avatarUrl: string | null;
   roles: AppRole[];
-  activeRole: AppRole;
+  defaultRole: AppRole;
 }
 
 export function AppShell({
@@ -18,7 +18,7 @@ export function AppShell({
   email,
   avatarUrl,
   roles,
-  activeRole,
+  defaultRole,
 }: AppShellProps) {
   return (
     <div className="flex min-h-screen flex-col bg-eggshell">
@@ -27,12 +27,12 @@ export function AppShell({
         email={email}
         avatarUrl={avatarUrl}
         roles={roles}
-        activeRole={activeRole}
+        defaultRole={defaultRole}
       />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 pt-4 pb-24 md:pb-10">
         {children}
       </main>
-      <BottomNav />
+      <BottomNav roles={roles} defaultRole={defaultRole} />
       <Toaster richColors position="top-center" />
     </div>
   );

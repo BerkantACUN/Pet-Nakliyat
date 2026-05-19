@@ -88,6 +88,24 @@ function slugify(s: string): string {
     .slice(0, 60);
 }
 
+export async function enableCustomerAction(): Promise<ActionResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Oturum yok" };
+
+  const { error } = await supabase
+    .from("user_roles")
+    .upsert({ user_id: user.id, role: "customer" });
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/profil");
+  revalidatePath("/panel");
+  revalidatePath("/musteri");
+  return { ok: true };
+}
+
 export async function enableTransporterAction(): Promise<ActionResult> {
   const supabase = await createClient();
   const {

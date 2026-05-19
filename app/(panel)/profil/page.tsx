@@ -4,15 +4,19 @@ import { createClient } from "@/lib/supabase/server";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 import { TransporterProfileForm } from "@/components/profile/TransporterProfileForm";
 import { EnableTransporterButton } from "@/components/profile/EnableTransporterButton";
+import { EnableCustomerButton } from "@/components/profile/EnableCustomerButton";
 import { Button } from "@/components/ui/button";
 
 export const metadata = { title: "Profil — Patiyolu" };
+export const dynamic = "force-dynamic";
 
 export default async function ProfilePage() {
   const user = await requireOnboardedUser();
   const supabase = await createClient();
 
+  const isCustomer = user.roles.includes("customer");
   const isTransporter = user.roles.includes("transporter");
+
   const { data: tp } = isTransporter
     ? await supabase
         .from("transporter_profiles")
@@ -29,7 +33,7 @@ export default async function ProfilePage() {
         </span>
         <h1 className="font-display text-[28px] leading-tight">Profil</h1>
         <p className="text-[13px] text-gravel">
-          Adın, iletişim bilgilerin ve taşıyıcı detayların.
+          Adın, iletişim bilgilerin ve rollerin.
         </p>
       </header>
 
@@ -42,6 +46,31 @@ export default async function ProfilePage() {
             phone: user.profile!.phone ?? "",
           }}
         />
+      </section>
+
+      <section className="rounded-3xl border border-chalk bg-white p-5">
+        <h2 className="mb-1 font-display text-[18px]">Rollerin</h2>
+        <p className="mb-4 text-[12px] text-gravel">
+          Aktif olan rollere göre paneline farklı sekmeler eklenir.
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <RoleTile
+            label="Müşteri"
+            emoji="🐾"
+            active={isCustomer}
+            description="Petini taşıt, ilan aç."
+          />
+          <RoleTile
+            label="Taşıyıcı"
+            emoji="🚐"
+            active={isTransporter}
+            description="Pet taşı, gelir kazan."
+          />
+        </div>
+        <div className="mt-4 grid gap-2">
+          {!isCustomer ? <EnableCustomerButton /> : null}
+          {!isTransporter ? <EnableTransporterButton /> : null}
+        </div>
       </section>
 
       {isTransporter ? (
@@ -74,8 +103,8 @@ export default async function ProfilePage() {
           ) : (
             <div className="rounded-2xl bg-powder/40 p-4">
               <p className="text-[13px] text-gravel">
-                Taşıyıcı profilin henüz oluşturulmamış. Aşağıdaki butona
-                tıklayarak sözleşme + KYC adımlarını başlatabilirsin.
+                Taşıyıcı profilin henüz hazır değil. Aşağıdaki butona basarak
+                varsayılan profili oluştur, sonra sözleşme + KYC adımlarına geç.
               </p>
               <div className="mt-3">
                 <EnableTransporterButton />
@@ -83,18 +112,7 @@ export default async function ProfilePage() {
             </div>
           )}
         </section>
-      ) : (
-        <section className="rounded-3xl border border-chalk bg-powder/40 p-5">
-          <h2 className="font-display text-[18px]">Taşıyıcı modunu aç</h2>
-          <p className="mt-1 text-[13px] text-gravel">
-            Aracınla pet nakliyat yapmak istiyorsan taşıyıcı modunu aç,
-            sözleşmeyi imzala, KYC'yi tamamla.
-          </p>
-          <div className="mt-4">
-            <EnableTransporterButton />
-          </div>
-        </section>
-      )}
+      ) : null}
 
       <section className="rounded-3xl border border-chalk bg-white p-5 text-[13px] text-gravel">
         <p>
@@ -122,6 +140,38 @@ export default async function ProfilePage() {
           </Button>
         </div>
       </section>
+    </div>
+  );
+}
+
+interface RoleTileProps {
+  label: string;
+  emoji: string;
+  active: boolean;
+  description: string;
+}
+
+function RoleTile({ label, emoji, active, description }: RoleTileProps) {
+  return (
+    <div
+      className={`rounded-2xl border p-4 ${
+        active ? "border-paw bg-paw/10" : "border-chalk bg-powder/40"
+      }`}
+    >
+      <div className="flex items-center justify-between">
+        <span className="text-[20px]" aria-hidden>
+          {emoji}
+        </span>
+        <span
+          className={`font-mono text-[10px] uppercase tracking-[0.12em] ${
+            active ? "text-paw" : "text-gravel"
+          }`}
+        >
+          {active ? "aktif" : "kapalı"}
+        </span>
+      </div>
+      <div className="mt-2 font-display text-[16px] leading-tight">{label}</div>
+      <p className="text-[12px] text-gravel">{description}</p>
     </div>
   );
 }

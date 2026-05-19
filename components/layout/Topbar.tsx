@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState, useTransition } from "react";
 import { ChevronDown, LogOut, UserCircle2, Plus, Settings } from "lucide-react";
 import {
@@ -15,23 +16,33 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { signOutAction } from "@/app/(auth)/actions";
 import type { AppRole } from "@/lib/supabase/types";
 import { cn } from "@/lib/utils";
+import { detectActiveRole } from "./role-context";
 
-const ROLE_META: Record<AppRole, { label: string; emoji: string; href: string }> = {
-  customer: { label: "Müşteri", emoji: "🐾", href: "/musteri/ilanlarim" },
-  transporter: { label: "Taşıyıcı", emoji: "🚐", href: "/tasiyici/ilanlar" },
-  sitter: { label: "Bakıcı", emoji: "🏠", href: "/panel" },
-  vet: { label: "Veteriner", emoji: "🏥", href: "/panel" },
-};
+const ROLE_META: Record<AppRole, { label: string; emoji: string; href: string }> =
+  {
+    customer: { label: "Müşteri", emoji: "🐾", href: "/musteri" },
+    transporter: { label: "Taşıyıcı", emoji: "🚐", href: "/tasiyici" },
+    sitter: { label: "Bakıcı", emoji: "🏠", href: "/panel" },
+    vet: { label: "Veteriner", emoji: "🏥", href: "/panel" },
+  };
 
 interface TopbarProps {
   name: string;
   email: string | null;
   avatarUrl: string | null;
   roles: AppRole[];
-  activeRole: AppRole;
+  defaultRole: AppRole;
 }
 
-export function Topbar({ name, email, avatarUrl, roles, activeRole }: TopbarProps) {
+export function Topbar({
+  name,
+  email,
+  avatarUrl,
+  roles,
+  defaultRole,
+}: TopbarProps) {
+  const pathname = usePathname();
+  const activeRole = detectActiveRole(pathname, roles, defaultRole);
   const [pending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
 
@@ -139,7 +150,7 @@ function RoleSwitcher({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="hidden items-center gap-1.5 rounded-full border border-chalk bg-white px-3 py-1.5 text-[12px] transition hover:bg-powder sm:inline-flex">
+      <DropdownMenuTrigger className="inline-flex items-center gap-1.5 rounded-full border border-chalk bg-white px-3 py-1.5 text-[12px] transition hover:bg-powder">
         <span aria-hidden>{ROLE_META[activeRole].emoji}</span>
         {ROLE_META[activeRole].label}
         <ChevronDown className="size-3 text-gravel" />
@@ -150,7 +161,7 @@ function RoleSwitcher({
         className="min-w-48 rounded-2xl border-chalk bg-white p-2 shadow-[0_12px_40px_-12px_rgba(17,17,17,0.18)]"
       >
         <DropdownMenuLabel className="px-3 py-2 text-[11px] uppercase tracking-[0.15em] text-gravel">
-          Roller
+          Hangi rolde çalışıyorsun?
         </DropdownMenuLabel>
         {roles.map((r) => {
           const meta = ROLE_META[r];
@@ -164,6 +175,9 @@ function RoleSwitcher({
                 {meta.emoji}
               </span>
               {meta.label}
+              {r === activeRole ? (
+                <span className="ml-auto text-[10px] text-gravel">aktif</span>
+              ) : null}
             </DropdownMenuItem>
           );
         })}
