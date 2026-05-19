@@ -5,6 +5,17 @@
 export type AppRole = "customer" | "transporter" | "sitter" | "vet";
 export type Species = "dog" | "cat" | "bird" | "rabbit" | "other";
 export type VehicleType = "car" | "van" | "truck";
+export type Region =
+  | "marmara"
+  | "ege"
+  | "akdeniz"
+  | "ic_anadolu"
+  | "karadeniz"
+  | "dogu_anadolu"
+  | "guneydogu_anadolu";
+export type FoodType = "dry" | "wet" | "raw" | "home_cooked" | "mixed" | "other";
+export type CarrierProvided = "customer" | "transporter" | "none";
+export type TemperaturePreference = "cool" | "normal" | "warm";
 export type KycStatus = "pending" | "approved" | "rejected";
 export type Urgency = "standard" | "express" | "sameday";
 export type ListingStatus =
@@ -57,6 +68,7 @@ export type Database = {
           bio: string | null;
           cover_url: string | null;
           last_seen_at: string | null;
+          region: Region | null;
           kvkk_consent_at: string;
           marketing_consent: boolean;
           default_role: AppRole;
@@ -73,6 +85,7 @@ export type Database = {
           bio?: string | null;
           cover_url?: string | null;
           last_seen_at?: string | null;
+          region?: Region | null;
           kvkk_consent_at: string;
           marketing_consent?: boolean;
           default_role?: AppRole;
@@ -89,6 +102,7 @@ export type Database = {
           bio?: string | null;
           cover_url?: string | null;
           last_seen_at?: string | null;
+          region?: Region | null;
           kvkk_consent_at?: string;
           marketing_consent?: boolean;
           default_role?: AppRole;
@@ -186,6 +200,15 @@ export type Database = {
           age_years: number | null;
           photo_url: string | null;
           special_notes: string | null;
+          food_brand: string | null;
+          food_type: FoodType | null;
+          feeding_times: string[];
+          toilet_times: string[];
+          medications: string | null;
+          is_neutered: boolean;
+          is_vaccinated: boolean;
+          vet_contact: string | null;
+          emergency_contact: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -199,6 +222,15 @@ export type Database = {
           age_years?: number | null;
           photo_url?: string | null;
           special_notes?: string | null;
+          food_brand?: string | null;
+          food_type?: FoodType | null;
+          feeding_times?: string[];
+          toilet_times?: string[];
+          medications?: string | null;
+          is_neutered?: boolean;
+          is_vaccinated?: boolean;
+          vet_contact?: string | null;
+          emergency_contact?: string | null;
         };
         Update: {
           id?: string;
@@ -210,6 +242,15 @@ export type Database = {
           age_years?: number | null;
           photo_url?: string | null;
           special_notes?: string | null;
+          food_brand?: string | null;
+          food_type?: FoodType | null;
+          feeding_times?: string[];
+          toilet_times?: string[];
+          medications?: string | null;
+          is_neutered?: boolean;
+          is_vaccinated?: boolean;
+          vet_contact?: string | null;
+          emergency_contact?: string | null;
         };
         Relationships: [];
       };
@@ -236,6 +277,10 @@ export type Database = {
           listing_fee_paid_at: string | null;
           listing_fee_amount: number | null;
           iyzico_listing_ref: string | null;
+          care_notes: string | null;
+          feeding_during_transit: boolean;
+          carrier_provided: CarrierProvided | null;
+          temperature_preference: TemperaturePreference | null;
           published_at: string | null;
           created_at: string;
           updated_at: string;
@@ -263,6 +308,10 @@ export type Database = {
           listing_fee_paid_at?: string | null;
           listing_fee_amount?: number | null;
           iyzico_listing_ref?: string | null;
+          care_notes?: string | null;
+          feeding_during_transit?: boolean;
+          carrier_provided?: CarrierProvided | null;
+          temperature_preference?: TemperaturePreference | null;
         };
         Update: {
           pet_id?: string | null;
@@ -285,6 +334,10 @@ export type Database = {
           listing_fee_paid_at?: string | null;
           listing_fee_amount?: number | null;
           iyzico_listing_ref?: string | null;
+          care_notes?: string | null;
+          feeding_during_transit?: boolean;
+          carrier_provided?: CarrierProvided | null;
+          temperature_preference?: TemperaturePreference | null;
         };
         Relationships: [];
       };
@@ -697,6 +750,7 @@ export type Database = {
           cover_url: string | null;
           bio: string | null;
           city: string | null;
+          region: Region | null;
           created_at: string;
           last_seen_at: string | null;
           rating_avg: number;

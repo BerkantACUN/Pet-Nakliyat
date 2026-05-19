@@ -59,6 +59,10 @@ export function ListingForm({ pets }: ListingFormProps) {
       scheduledAt: defaultScheduledAt(),
       urgency: "standard",
       notes: "",
+      careNotes: "",
+      feedingDuringTransit: false,
+      carrierProvided: "",
+      temperaturePreference: "",
     },
   });
 
@@ -275,6 +279,67 @@ export function ListingForm({ pets }: ListingFormProps) {
         {errors.notes?.message ? (
           <p className="text-[12px] text-danger">{errors.notes.message}</p>
         ) : null}
+      </Section>
+
+      {/* Bakım tercihleri */}
+      <Section title="Bakım tercihleri" hint="Taşıma sırasında dikkat edilecekler.">
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <label className="text-[12px] text-gravel" htmlFor="carrierProvided">
+              Taşıma kafesi / sepeti
+            </label>
+            <select
+              id="carrierProvided"
+              className="w-full rounded-input border border-chalk bg-white px-3 py-2 text-[14px] outline-none focus-visible:border-signal"
+              {...register("carrierProvided")}
+            >
+              <option value="">Belirtme…</option>
+              <option value="customer">Ben sağlıyorum</option>
+              <option value="transporter">Taşıyıcı sağlasın</option>
+              <option value="none">Gerek yok</option>
+            </select>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[12px] text-gravel" htmlFor="temperaturePreference">
+              Sıcaklık tercihi
+            </label>
+            <select
+              id="temperaturePreference"
+              className="w-full rounded-input border border-chalk bg-white px-3 py-2 text-[14px] outline-none focus-visible:border-signal"
+              {...register("temperaturePreference")}
+            >
+              <option value="">Belirtme…</option>
+              <option value="cool">Serin (klima açık)</option>
+              <option value="normal">Normal</option>
+              <option value="warm">Sıcak / battaniyeli</option>
+            </select>
+          </div>
+
+          <label className="flex items-center gap-2 rounded-2xl border border-chalk bg-white px-3 py-2.5 text-[13px] hover:bg-powder">
+            <input
+              type="checkbox"
+              className="size-4 accent-obsidian"
+              {...register("feedingDuringTransit")}
+            />
+            Yol sırasında beslenme molası verilsin
+          </label>
+
+          <div className="space-y-1.5">
+            <label className="text-[12px] text-gravel" htmlFor="careNotes">
+              Detaylı bakım talimatı
+            </label>
+            <Textarea
+              id="careNotes"
+              rows={3}
+              placeholder="Mama saati, tuvalet ihtiyacı, ilaç…"
+              {...register("careNotes")}
+            />
+            {errors.careNotes?.message ? (
+              <p className="text-[12px] text-danger">{errors.careNotes.message}</p>
+            ) : null}
+          </div>
+        </div>
       </Section>
 
       {/* Fiyat quote */}

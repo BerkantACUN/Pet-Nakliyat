@@ -15,6 +15,43 @@ const profileSchema = z.object({
     .regex(/^[+0-9()\- ]+$/, "Geçersiz format"),
 });
 
+const regionSchema = z.object({
+  region: z.enum([
+    "marmara",
+    "ege",
+    "akdeniz",
+    "ic_anadolu",
+    "karadeniz",
+    "dogu_anadolu",
+    "guneydogu_anadolu",
+  ]),
+});
+
+export async function updateRegionAction(input: {
+  region: string;
+}): Promise<ActionResult> {
+  const parsed = regionSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: "Geçersiz bölge" };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Oturum yok" };
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ region: parsed.data.region })
+    .eq("id", user.id);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/profil");
+  revalidatePath("/akis");
+  return { ok: true };
+}
+
 const transporterSchema = z.object({
   displayName: z.string().min(3).max(80),
   bio: z.string().max(500).optional().nullable(),

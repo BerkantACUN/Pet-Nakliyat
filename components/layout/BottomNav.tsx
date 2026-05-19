@@ -2,7 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Package, User, PawPrint, Truck, Inbox, Plus, Bell } from "lucide-react";
+import {
+  Home,
+  Package,
+  User,
+  PawPrint,
+  Truck,
+  Inbox,
+  Plus,
+  Bell,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AppRole } from "@/lib/supabase/types";
 import { detectActiveRole } from "./role-context";
@@ -17,13 +26,20 @@ interface BottomNavItem {
 }
 
 const CUSTOMER_ITEMS: BottomNavItem[] = [
-  { href: "/musteri", label: "Anasayfa", icon: Home, match: (p) => p === "/musteri" || p === "/panel" },
+  {
+    href: "/akis",
+    label: "Akış",
+    icon: Home,
+    match: (p) => p === "/akis" || p === "/panel",
+  },
   {
     href: "/musteri/ilanlarim",
-    label: "İlanlarım",
+    label: "İlanlar",
     icon: Package,
     match: (p) =>
-      p.startsWith("/musteri/ilanlarim") || p.startsWith("/musteri/ilan-olustur"),
+      p.startsWith("/musteri/ilanlarim") ||
+      p.startsWith("/musteri/ilan-olustur") ||
+      p === "/musteri",
   },
   {
     href: "/musteri/petlerim",
@@ -46,12 +62,17 @@ const CUSTOMER_ITEMS: BottomNavItem[] = [
 ];
 
 const TRANSPORTER_ITEMS: BottomNavItem[] = [
-  { href: "/tasiyici", label: "Anasayfa", icon: Home, match: (p) => p === "/tasiyici" || p === "/panel" },
+  {
+    href: "/akis",
+    label: "Akış",
+    icon: Home,
+    match: (p) => p === "/akis" || p === "/panel",
+  },
   {
     href: "/tasiyici/ilanlar",
     label: "İlanlar",
     icon: Truck,
-    match: (p) => p.startsWith("/tasiyici/ilanlar"),
+    match: (p) => p.startsWith("/tasiyici/ilanlar") || p === "/tasiyici",
   },
   {
     href: "/tasiyici/tekliflerim",
@@ -70,12 +91,16 @@ const TRANSPORTER_ITEMS: BottomNavItem[] = [
     href: "/profil",
     label: "Profil",
     icon: User,
-    match: (p) => p === "/profil" || p === "/ayarlar" || p.startsWith("/tasiyici/kyc") || p.startsWith("/sozlesme"),
+    match: (p) =>
+      p === "/profil" ||
+      p === "/ayarlar" ||
+      p.startsWith("/tasiyici/kyc") ||
+      p.startsWith("/sozlesme"),
   },
 ];
 
 const NEUTRAL_ITEMS: BottomNavItem[] = [
-  { href: "/panel", label: "Anasayfa", icon: Home, match: (p) => p === "/panel" },
+  { href: "/akis", label: "Akış", icon: Home, match: (p) => p === "/akis" || p === "/panel" },
   {
     href: "/profil",
     label: "Rolü tamamla",

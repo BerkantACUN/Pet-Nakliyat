@@ -148,6 +148,47 @@ export default async function TasiyiciIlanDetayPage({ params }: PageProps) {
         </section>
       ) : null}
 
+      {(listing.care_notes ||
+        listing.carrier_provided ||
+        listing.temperature_preference ||
+        listing.feeding_during_transit) ? (
+        <section className="rounded-3xl border border-chalk bg-white p-5">
+          <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.15em] text-gravel">
+            Bakım tercihleri
+          </div>
+          <ul className="space-y-1.5 text-[13px]">
+            {listing.carrier_provided ? (
+              <li>
+                🧺 Kafes/sepet:{" "}
+                {listing.carrier_provided === "customer"
+                  ? "Müşteri sağlıyor"
+                  : listing.carrier_provided === "transporter"
+                    ? "Taşıyıcıdan beklenir"
+                    : "Gerek yok"}
+              </li>
+            ) : null}
+            {listing.temperature_preference ? (
+              <li>
+                🌡️ Sıcaklık:{" "}
+                {listing.temperature_preference === "cool"
+                  ? "Serin (klima açık)"
+                  : listing.temperature_preference === "warm"
+                    ? "Sıcak / battaniyeli"
+                    : "Normal"}
+              </li>
+            ) : null}
+            {listing.feeding_during_transit ? (
+              <li>🍽️ Yol sırasında beslenme molası verilecek</li>
+            ) : null}
+            {listing.care_notes ? (
+              <li className="border-t border-chalk pt-2 leading-relaxed text-gravel">
+                {listing.care_notes}
+              </li>
+            ) : null}
+          </ul>
+        </section>
+      ) : null}
+
       <section className="rounded-3xl border border-chalk bg-eggshell p-5">
         <div className="font-mono text-[10px] uppercase tracking-[0.15em] text-gravel">
           tahmini fiyat aralığı

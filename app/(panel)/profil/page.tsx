@@ -7,9 +7,11 @@ import { EnableTransporterButton } from "@/components/profile/EnableTransporterB
 import { EnableCustomerButton } from "@/components/profile/EnableCustomerButton";
 import { AvatarUploader } from "@/components/profile/AvatarUploader";
 import { BioEditor } from "@/components/profile/BioEditor";
+import { RegionSelector } from "@/components/profile/RegionSelector";
 import { PostComposer } from "@/components/posts/PostComposer";
 import { PostCard, type PostCardData } from "@/components/posts/PostCard";
 import { Button } from "@/components/ui/button";
+import { regionForCity } from "@/lib/turkey-regions";
 
 export const metadata = { title: "Profil — Patiyolu" };
 export const dynamic = "force-dynamic";
@@ -31,9 +33,11 @@ export default async function ProfilePage() {
 
   const { data: fullProfile } = await supabase
     .from("profiles")
-    .select("bio, avatar_url")
+    .select("bio, avatar_url, region")
     .eq("id", user.id)
     .maybeSingle();
+
+  const suggestedRegion = regionForCity(user.profile!.city);
 
   const { data: rawPosts } = await supabase
     .from("posts")
@@ -83,6 +87,10 @@ export default async function ProfilePage() {
           name={user.profile!.full_name}
         />
         <BioEditor defaultBio={fullProfile?.bio ?? ""} />
+        <RegionSelector
+          current={fullProfile?.region ?? null}
+          suggested={suggestedRegion}
+        />
       </section>
 
       <section className="space-y-3">

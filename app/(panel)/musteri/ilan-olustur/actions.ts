@@ -27,7 +27,18 @@ export async function createListingDraftAction(
   if (!parsed.success) {
     return { ok: false, fieldErrors: flattenZodError(parsed.error) };
   }
-  const { petId, pickup, dropoff, scheduledAt, urgency, notes } = parsed.data;
+  const {
+    petId,
+    pickup,
+    dropoff,
+    scheduledAt,
+    urgency,
+    notes,
+    careNotes,
+    feedingDuringTransit,
+    carrierProvided,
+    temperaturePreference,
+  } = parsed.data;
 
   const supabase = await createClient();
   const {
@@ -96,6 +107,14 @@ export async function createListingDraftAction(
       est_price_max: q.estMax,
       scheduled_at: new Date(scheduledAt).toISOString(),
       notes: notes || null,
+      care_notes: careNotes || null,
+      feeding_during_transit: feedingDuringTransit ?? false,
+      carrier_provided: carrierProvided
+        ? (carrierProvided as "customer" | "transporter" | "none")
+        : null,
+      temperature_preference: temperaturePreference
+        ? (temperaturePreference as "cool" | "normal" | "warm")
+        : null,
       status: "draft",
     })
     .select("id")
