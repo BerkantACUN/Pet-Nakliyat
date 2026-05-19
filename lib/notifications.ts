@@ -83,6 +83,21 @@ export function renderNotification(
         href: n.actor ? `/u/${n.actor.id}` : "/bildirimler",
       };
     }
+    case "post_like":
+      return {
+        emoji: "❤️",
+        title: `${actor} paylaşımını beğendi`,
+        href: n.actor ? `/u/${n.actor.id}` : "/bildirimler",
+      };
+    case "post_comment": {
+      const preview = getString(n.payload, "preview");
+      return {
+        emoji: "💭",
+        title: `${actor} paylaşımına yorum yazdı`,
+        body: preview ?? undefined,
+        href: n.actor ? `/u/${n.actor.id}` : "/bildirimler",
+      };
+    }
     default:
       return {
         emoji: "🔔",

@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Chip } from "@/components/marketing/Chip";
 import { FollowButton } from "@/components/profile/FollowButton";
 import { MessageButton } from "@/components/profile/MessageButton";
+import { PostCard, type PostCardData } from "@/components/posts/PostCard";
 
 export const dynamic = "force-dynamic";
 
@@ -61,6 +62,42 @@ export default async function PublicProfilePage({ params }: PageProps) {
       .maybeSingle();
     isFollowing = !!f;
   }
+
+  // Paylaşımları
+  const { data: rawPosts } = await supabase
+    .from("posts")
+    .select("id, author_id, body, image_url, like_count, comment_count, created_at")
+    .eq("author_id", stats.id)
+    .order("created_at", { ascending: false })
+    .limit(20);
+
+  let likedSet = new Set<string>();
+  if (me && rawPosts && rawPosts.length > 0) {
+    const likes = await supabase
+      .from("post_likes")
+      .select("post_id")
+      .eq("user_id", me.id)
+      .in(
+        "post_id",
+        rawPosts.map((p) => p.id),
+      );
+    likedSet = new Set((likes.data ?? []).map((l) => l.post_id));
+  }
+
+  const posts: PostCardData[] = (rawPosts ?? []).map((p) => ({
+    id: p.id,
+    author_id: p.author_id,
+    body: p.body,
+    image_url: p.image_url,
+    like_count: p.like_count,
+    comment_count: p.comment_count,
+    created_at: p.created_at,
+    author: {
+      full_name: stats.full_name,
+      avatar_url: stats.avatar_url,
+    },
+    liked_by_me: likedSet.has(p.id),
+  }));
 
   // Son yorumlar (taşıyıcıysa)
   type ReviewItem = {
@@ -249,6 +286,16 @@ export default async function PublicProfilePage({ params }: PageProps) {
                 </Chip>
               </div>
             ) : null}
+          </div>
+        ) : null}
+
+        {/* Paylaşımlar */}
+        {posts.length > 0 ? (
+          <div className="mt-4 space-y-3">
+            <h2 className="px-1 font-display text-[18px]">Paylaşımlar</h2>
+            {posts.map((p) => (
+              <PostCard key={p.id} post={p} currentUserId={me?.id ?? null} />
+            ))}
           </div>
         ) : null}
 

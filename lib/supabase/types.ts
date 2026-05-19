@@ -578,12 +578,15 @@ export type Database = {
             | "bid_rejected"
             | "message"
             | "booking_update"
-            | "review_received";
+            | "review_received"
+            | "post_like"
+            | "post_comment";
           actor_id: string | null;
           related_listing: string | null;
           related_bid: string | null;
           related_booking: string | null;
           related_conversation: string | null;
+          related_post: string | null;
           payload: Json | null;
           read_at: string | null;
           created_at: string;
@@ -598,17 +601,80 @@ export type Database = {
             | "bid_rejected"
             | "message"
             | "booking_update"
-            | "review_received";
+            | "review_received"
+            | "post_like"
+            | "post_comment";
           actor_id?: string | null;
           related_listing?: string | null;
           related_bid?: string | null;
           related_booking?: string | null;
           related_conversation?: string | null;
+          related_post?: string | null;
           payload?: Json | null;
           read_at?: string | null;
         };
         Update: {
           read_at?: string | null;
+        };
+        Relationships: [];
+      };
+      posts: {
+        Row: {
+          id: string;
+          author_id: string;
+          body: string;
+          image_url: string | null;
+          pet_id: string | null;
+          like_count: number;
+          comment_count: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          author_id: string;
+          body: string;
+          image_url?: string | null;
+          pet_id?: string | null;
+          like_count?: number;
+          comment_count?: number;
+        };
+        Update: {
+          body?: string;
+          image_url?: string | null;
+          pet_id?: string | null;
+        };
+        Relationships: [];
+      };
+      post_likes: {
+        Row: {
+          post_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          post_id: string;
+          user_id: string;
+        };
+        Update: never;
+        Relationships: [];
+      };
+      post_comments: {
+        Row: {
+          id: string;
+          post_id: string;
+          author_id: string;
+          body: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          post_id: string;
+          author_id: string;
+          body: string;
+        };
+        Update: {
+          body?: string;
         };
         Relationships: [];
       };
@@ -673,3 +739,6 @@ export type Review = Database["public"]["Tables"]["reviews"]["Row"];
 export type Follow = Database["public"]["Tables"]["follows"]["Row"];
 export type Notification = Database["public"]["Tables"]["notifications"]["Row"];
 export type NotificationType = Notification["type"];
+export type Post = Database["public"]["Tables"]["posts"]["Row"];
+export type PostLike = Database["public"]["Tables"]["post_likes"]["Row"];
+export type PostComment = Database["public"]["Tables"]["post_comments"]["Row"];

@@ -7,6 +7,8 @@ import { EnableTransporterButton } from "@/components/profile/EnableTransporterB
 import { EnableCustomerButton } from "@/components/profile/EnableCustomerButton";
 import { AvatarUploader } from "@/components/profile/AvatarUploader";
 import { BioEditor } from "@/components/profile/BioEditor";
+import { PostComposer } from "@/components/posts/PostComposer";
+import { PostCard, type PostCardData } from "@/components/posts/PostCard";
 import { Button } from "@/components/ui/button";
 
 export const metadata = { title: "Profil — Patiyolu" };
@@ -33,6 +35,36 @@ export default async function ProfilePage() {
     .eq("id", user.id)
     .maybeSingle();
 
+  const { data: rawPosts } = await supabase
+    .from("posts")
+    .select("id, author_id, body, image_url, like_count, comment_count, created_at")
+    .eq("author_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(20);
+
+  const myLikes = await supabase
+    .from("post_likes")
+    .select("post_id")
+    .eq("user_id", user.id)
+    .in("post_id", (rawPosts ?? []).map((p) => p.id));
+
+  const likedSet = new Set((myLikes.data ?? []).map((l) => l.post_id));
+
+  const posts: PostCardData[] = (rawPosts ?? []).map((p) => ({
+    id: p.id,
+    author_id: p.author_id,
+    body: p.body,
+    image_url: p.image_url,
+    like_count: p.like_count,
+    comment_count: p.comment_count,
+    created_at: p.created_at,
+    author: {
+      full_name: user.profile!.full_name,
+      avatar_url: fullProfile?.avatar_url ?? user.profile!.avatar_url,
+    },
+    liked_by_me: likedSet.has(p.id),
+  }));
+
   return (
     <div className="space-y-6">
       <header className="flex flex-col gap-1">
@@ -51,6 +83,21 @@ export default async function ProfilePage() {
           name={user.profile!.full_name}
         />
         <BioEditor defaultBio={fullProfile?.bio ?? ""} />
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="font-display text-[18px]">Paylaşımların</h2>
+        <PostComposer
+          authorName={user.profile!.full_name}
+          avatarUrl={fullProfile?.avatar_url ?? user.profile!.avatar_url}
+        />
+        {posts.length > 0 ? (
+          <div className="space-y-3">
+            {posts.map((p) => (
+              <PostCard key={p.id} post={p} currentUserId={user.id} />
+            ))}
+          </div>
+        ) : null}
       </section>
 
       <section className="rounded-3xl border border-chalk bg-white p-5">

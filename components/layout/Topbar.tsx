@@ -8,7 +8,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -84,7 +83,7 @@ export function Topbar({
               sideOffset={6}
               className="min-w-56 rounded-2xl border-chalk bg-white p-2 shadow-[0_12px_40px_-12px_rgba(17,17,17,0.18)]"
             >
-              <DropdownMenuLabel className="px-3 py-2">
+              <div className="px-3 py-2">
                 <div className="text-[13px] font-medium text-obsidian">
                   {name}
                 </div>
@@ -93,7 +92,7 @@ export function Topbar({
                     {email}
                   </div>
                 ) : null}
-              </DropdownMenuLabel>
+              </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 render={<Link href="/profil" />}
@@ -162,9 +161,9 @@ function RoleSwitcher({
         sideOffset={6}
         className="min-w-48 rounded-2xl border-chalk bg-white p-2 shadow-[0_12px_40px_-12px_rgba(17,17,17,0.18)]"
       >
-        <DropdownMenuLabel className="px-3 py-2 text-[11px] uppercase tracking-[0.15em] text-gravel">
+        <div className="px-3 py-2 font-mono text-[10px] uppercase tracking-[0.15em] text-gravel">
           Hangi rolde çalışıyorsun?
-        </DropdownMenuLabel>
+        </div>
         {roles.map((r) => {
           const meta = ROLE_META[r];
           return (
