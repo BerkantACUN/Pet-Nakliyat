@@ -10,7 +10,6 @@ import {
 import { toast } from "sonner";
 import { Loader2, SendHorizonal } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
 import {
   sendMessageAction,
   markConversationReadAction,
@@ -160,18 +159,18 @@ export function ChatRoom({
           placeholder="Mesajını yaz…"
           className="max-h-32 flex-1 resize-none bg-transparent px-3 py-2 text-[14px] outline-none"
         />
-        <Button
+        <button
           type="submit"
-          variant="pill"
-          size="sm"
           disabled={pending || draft.trim().length === 0}
+          aria-label="Gönder"
+          className="grid size-9 shrink-0 place-items-center rounded-full bg-obsidian text-eggshell transition hover:bg-obsidian/85 disabled:opacity-50"
         >
           {pending ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
             <SendHorizonal className="size-4" />
           )}
-        </Button>
+        </button>
       </form>
     </div>
   );
